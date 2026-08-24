@@ -1,0 +1,9 @@
+{
+  "name": "Pokeland Helper",
+  "short_name": "Pokeland",
+  "start_url": "/pokeland-Helper-/",
+  "scope": "/pokeland-Helper-/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000"
+}
