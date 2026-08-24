@@ -1,0 +1,2024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07080b">
+<meta name="description" content="Pokeland Helper — daily rotation, weather boosts, events & server timers.">
+<title>Pokeland Helper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07080b; --s0: #0c0e13; --s1: #12151c; --s2: #181c26; --s3: #1e2430;
+  --line: rgba(255,255,255,0.06); --line-strong: rgba(255,255,255,0.10);
+  --ink: #eef0f4; --soft: #c4c9d4; --muted: #8b93a3; --dim: #5f6773;
+  --gold: #ef6a2b; --gold-rgb: 239,106,43;
+  --gold-soft: rgba(var(--gold-rgb),0.14); --gold-line: rgba(var(--gold-rgb),0.35);
+  --green: #4fd69c; --green-soft: rgba(79,214,156,0.14);
+  --red: #f2564b; --blue: #5aa7d8;
+  --radius: 16px; --radius-lg: 22px; --radius-xl: 28px;
+  --nav-h: 64px; --safe-b: env(safe-area-inset-bottom, 0px);
+  --font: 'Bricolage Grotesque', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font); background: var(--bg); color: var(--ink);
+  min-height: 100dvh; line-height: 1.45; -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+button, input { font: inherit; color: inherit; border: none; background: none; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+img { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+.ambient {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(var(--gold-rgb),0.08), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 100% 50%, rgba(90,167,216,0.05), transparent 45%),
+    radial-gradient(ellipse 50% 30% at 0% 80%, rgba(79,214,156,0.04), transparent 40%);
+}
+.app {
+  position: relative; z-index: 1; max-width: 480px; margin: 0 auto;
+  min-height: 100dvh; padding-bottom: calc(var(--nav-h) + var(--safe-b) + 20px);
+}
+.header {
+  position: sticky; top: 0; z-index: 40;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px 12px;
+  background: rgba(7,8,11,0.85); backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4); border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  width: 34px; height: 34px; border-radius: 11px; padding: 0; flex-shrink: 0;
+  background: #f4f6fb; position: relative;
+  display: grid; place-items: center; box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  transition: transform .12s;
+}
+.brand-mark svg { border-radius: 11px; }
+.brand-mark::after { content: ""; position: absolute; inset: -6px; border-radius: 15px; }
+.brand-mark:active { transform: scale(0.92); }
+.brand-mark:hover { box-shadow: 0 4px 16px rgba(var(--gold-rgb),0.45); }
+}
+.brand-mark svg { width: 34px; height: 34px; display: block; }
+.brand-name { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; }
+.brand-sub { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.clocks { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.clock { font-family: var(--mono); font-size: 0.7rem; font-weight: 500; color: var(--soft); }
+.clock span { color: var(--dim); margin-right: 4px; font-size: 0.58rem; }
+.main { padding: 16px 16px 0; }
+.kicker { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.kicker.gold { color: var(--gold); }
+.kicker.green { color: var(--green); }
+.card { background: var(--s1); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
+.card-glow { background: linear-gradient(155deg, rgba(var(--gold-rgb),0.12), var(--s0)); border-color: var(--gold-line); }
+.hero { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.hero-info { flex: 1; min-width: 0; }
+.hero-date { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 6px; }
+.hero-name { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 10px; }
+.hero-sprite-wrap {
+  width: 96px; height: 96px; flex-shrink: 0; display: grid; place-items: center;
+  background: radial-gradient(circle, rgba(var(--gold-rgb),0.15), transparent 70%); border-radius: 50%;
+}
+.hero-sprite { width: 88px; height: 88px; object-fit: contain; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.4)); animation: float 3.5s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+.type-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.type-chip { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 9px; border-radius: 7px; font-weight: 500; }
+.hero-actions { display: flex; gap: 8px; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 44px; padding: 0 16px; border-radius: 13px; font-size: 0.82rem; font-weight: 600;
+  border: 1px solid var(--line); background: var(--s2); color: var(--soft);
+  transition: background .15s, border-color .15s, transform .1s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--gold-soft); border-color: var(--gold-line); color: var(--gold); flex: 1; }
+.btn-ghost { flex: 0; padding: 0 14px; }
+.reset-bar { margin-top: 4px; padding: 14px 16px; background: var(--s0); border-radius: 14px; border: 1px solid var(--line); }
+.reset-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.reset-label { font-size: 0.78rem; color: var(--muted); }
+.reset-time { font-family: var(--mono); font-size: 0.85rem; font-weight: 600; }
+.progress { height: 5px; border-radius: 4px; background: var(--s3); overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--red), var(--gold)); transition: width 1s linear; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.promo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.build-promo {
+  width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  padding: 14px; text-align: left; transition: border-color .15s, transform .1s;
+}
+.build-promo:hover { border-color: var(--gold-line); }
+.build-promo:active { transform: scale(0.98); }
+.build-promo-icon {
+  width: 38px; height: 38px; flex-shrink: 0; border-radius: 11px; display: grid; place-items: center;
+  background: var(--gold-soft); color: var(--gold);
+}
+.build-promo-icon svg { width: 19px; height: 19px; }
+.build-promo-text { width: 100%; min-width: 0; }
+.build-promo-title { font-size: 0.92rem; font-weight: 700; letter-spacing: -0.01em; }
+.build-promo-sub { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.02em; color: var(--muted); margin-top: 2px; }
+.build-promo-arrow { position: absolute; top: 14px; right: 12px; width: 15px; height: 15px; color: var(--dim); }
+.build-promo { position: relative; }
+.stat {
+  padding: 14px; border-radius: 16px; background: var(--s1); border: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 6px; text-align: left; width: 100%;
+}
+.stat-label { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
+.stat-value { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; }
+.stat-value.live { color: var(--green); }
+.stat-meta { font-size: 0.72rem; color: var(--muted); }
+.section { margin-top: 22px; }
+.section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 0 2px; }
+.section-title { font-size: 0.95rem; font-weight: 600; }
+.section-link { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; color: var(--gold); text-transform: uppercase; }
+.week-scroll {
+  display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch; padding-bottom: 4px; margin: 0 -4px; padding-left: 4px; padding-right: 4px;
+}
+.week-scroll::-webkit-scrollbar { display: none; }
+.week-card {
+  flex-shrink: 0; width: 92px; scroll-snap-align: start;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 12px 8px 14px; border-radius: 17px; border: 1px solid var(--line); background: var(--s1);
+}
+.week-card.today { border-color: var(--gold-line); background: var(--gold-soft); }
+.week-card:active { transform: scale(0.96); }
+.week-dow { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.08em; color: var(--dim); margin-bottom: 6px; }
+.week-card.today .week-dow { color: var(--gold); }
+.week-sprite { width: 48px; height: 48px; object-fit: contain; margin-bottom: 6px; }
+.week-name { font-size: 0.68rem; font-weight: 500; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; color: var(--soft); }
+.event-list { display: flex; flex-direction: column; gap: 10px; }
+.event-item {
+  display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 16px;
+  background: var(--s1); border: 1px solid var(--line);
+}
+.event-item.live { border-color: rgba(79,214,156,0.35); background: linear-gradient(120deg, rgba(79,214,156,0.1), var(--s0)); }
+.event-ico { width: 42px; height: 42px; border-radius: 13px; flex-shrink: 0; display: grid; place-items: center; font-size: 1.15rem; background: var(--s2); }
+.event-item.live .event-ico { background: var(--green-soft); }
+.event-body { flex: 1; min-width: 0; }
+.event-name { font-size: 0.88rem; font-weight: 600; }
+.event-desc { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+.event-right { text-align: right; flex-shrink: 0; }
+.event-cd { font-family: var(--mono); font-size: 0.78rem; font-weight: 600; }
+.event-item.live .event-cd { color: var(--green); }
+.event-status { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.1em; color: var(--dim); margin-top: 2px; }
+.event-item.live .event-status { color: var(--green); }
+.fav-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 2px; }
+.fav-row::-webkit-scrollbar { display: none; }
+.fav-chip {
+  flex-shrink: 0; display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px 8px 8px; border-radius: 14px; background: var(--s1); border: 1px solid var(--line);
+}
+.fav-chip img { width: 32px; height: 32px; object-fit: contain; }
+.fav-chip span { font-size: 0.78rem; font-weight: 500; white-space: nowrap; }
+.fav-next { font-size: 0.65rem; color: var(--muted); }
+.cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.cal-nav button { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--s2); border: 1px solid var(--line); color: var(--soft); }
+.cal-month { font-size: 1rem; font-weight: 600; }
+.wx-status-retry { cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.cal-head { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.06em; text-align: center; color: var(--dim); padding: 4px 0 8px; }
+.cal-cell {
+  position: relative; min-height: 72px; border-radius: 13px; padding: 5px 3px 6px;
+  display: flex; flex-direction: column; align-items: center; border: 1px solid var(--line); background: var(--s1);
+}
+.cal-cell.today { border-color: var(--gold-line); background: var(--gold-soft); }
+.cal-cell.empty { visibility: hidden; }
+.cal-cell:not(.empty):active { transform: scale(0.95); }
+.cal-num { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); align-self: flex-start; padding-left: 4px; }
+.cal-cell.today .cal-num { color: var(--gold); }
+.cal-cell img { width: 36px; height: 36px; object-fit: contain; margin-top: 2px; }
+.cal-star { position: absolute; top: 3px; right: 4px; font-size: 0.55rem; color: var(--gold); }
+.search-bar { display: flex; gap: 8px; margin-bottom: 14px; }
+.search-input {
+  flex: 1; min-height: 46px; padding: 0 14px 0 40px; border-radius: 14px; border: 1px solid var(--line);
+  background: var(--s1) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%235f6773' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Cpath d='m13 13 3.5 3.5'/%3E%3C/svg%3E") 14px center no-repeat;
+  color: var(--ink); font-size: 0.88rem; outline: none;
+}
+.search-input:focus { border-color: var(--gold-line); }
+.search-input::placeholder { color: var(--dim); }
+.filter-btn {
+  min-height: 46px; padding: 0 14px; border-radius: 13px; border: 1px solid var(--line);
+  background: var(--s2); font-size: 0.76rem; font-weight: 500; color: var(--soft); white-space: nowrap;
+}
+.filter-btn.on { border-color: var(--gold-line); background: var(--gold-soft); color: var(--gold); }
+.result-list { display: flex; flex-direction: column; gap: 8px; }
+.result-row {
+  display: flex; align-items: center; gap: 12px; padding: 10px 13px; border-radius: 15px;
+  background: var(--s1); border: 1px solid var(--line); width: 100%; text-align: left;
+}
+.result-row img { width: 40px; height: 40px; object-fit: contain; }
+.result-name { font-size: 0.88rem; font-weight: 500; flex: 1; }
+.result-date { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); width: 70px; text-align: right; }
+.wx-tabs { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; }
+.wx-tabs::-webkit-scrollbar { display: none; }
+.wx-tab {
+  flex-shrink: 0; padding: 9px 14px; min-height: 40px; border-radius: 12px;
+  font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+  border: 1px solid var(--line); background: var(--s1); color: var(--muted);
+}
+.wx-tab.on { border-color: var(--gold-line); background: var(--gold-soft); color: var(--gold); }
+.wx-hero { padding: 20px; border-radius: var(--radius-xl); position: relative; overflow: hidden; border: 1px solid var(--line); }
+.wx-hero-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.wx-title { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin: 4px 0 6px; }
+.wx-window { font-size: 0.82rem; color: var(--soft); }
+.wx-icon { width: 52px; height: 52px; object-fit: contain; opacity: 0.9; }
+.wx-cd-block { margin-top: 16px; display: flex; align-items: baseline; gap: 10px; }
+.wx-cd { font-family: var(--mono); font-size: 1.45rem; font-weight: 600; letter-spacing: -0.02em; }
+.wx-cd-label { font-size: 0.75rem; color: var(--muted); }
+.wx-sync { display: flex; align-items: center; gap: 6px; margin-top: 12px; font-family: var(--mono); font-size: 0.58rem; color: var(--dim); }
+.dot { width: 6px; height: 6px; border-radius: 50%; animation: pulse 1.8s ease-in-out infinite; }
+.dot.green { background: var(--green); }
+.dot.gold { background: var(--gold); }
+.dot.red { background: var(--red); }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
+.spawn-section { margin-top: 18px; }
+.spawn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; margin-top: 8px; }
+.spawn-mon {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 8px 4px; border-radius: 12px; background: var(--s1); border: 1px solid var(--line);
+}
+.spawn-mon img { width: 40px; height: 40px; object-fit: contain; }
+.spawn-mon span { font-size: 0.58rem; color: var(--muted); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.wx-day-list { display: flex; flex-direction: column; gap: 16px; margin-top: 18px; }
+.wx-day-title { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.wx-event {
+  display: flex; align-items: center; gap: 11px; padding: 11px 13px 11px 16px; border-radius: 15px;
+  background: var(--s1); border: 1px solid var(--line); position: relative; overflow: hidden; margin-bottom: 8px; width: 100%; text-align: left;
+}
+.wx-event .rail { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+.wx-event img { width: 28px; height: 28px; object-fit: contain; }
+.wx-event-name { font-size: 0.85rem; font-weight: 500; flex: 1; }
+.wx-event-window { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); }
+.wx-event-tag { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.1em; }
+.server-hero {
+  text-align: center; padding: 28px 20px;
+  background: linear-gradient(160deg, rgba(var(--gold-rgb),0.1), var(--s0));
+  border: 1px solid var(--gold-line); border-radius: var(--radius-xl);
+}
+.server-num { font-size: 2.4rem; font-weight: 700; letter-spacing: -0.04em; color: var(--gold); margin: 8px 0 4px; }
+.server-when { font-size: 0.82rem; color: var(--muted); margin-bottom: 18px; }
+.countdown-blocks { display: flex; justify-content: center; gap: 10px; }
+.cd-block { min-width: 64px; padding: 12px 8px; border-radius: 14px; background: var(--s1); border: 1px solid var(--line); }
+.cd-val { font-family: var(--mono); font-size: 1.35rem; font-weight: 600; letter-spacing: -0.02em; }
+.cd-unit { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.12em; color: var(--dim); margin-top: 2px; }
+.server-list { margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
+.server-row {
+  display: flex; align-items: center; gap: 12px; padding: 13px 15px; border-radius: 15px;
+  background: var(--s1); border: 1px solid var(--line);
+}
+.server-row.next { border-color: var(--gold-line); background: var(--gold-soft); }
+.server-row .num { font-weight: 700; color: var(--gold); min-width: 48px; }
+.server-row .when { flex: 1; font-size: 0.82rem; color: var(--soft); }
+.server-row .away { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); }
+.download-card {
+  padding: 28px 22px; text-align: center;
+  background: linear-gradient(160deg, rgba(90,167,216,0.1), var(--s0));
+  border: 1px solid rgba(90,167,216,0.25); border-radius: var(--radius-xl);
+}
+.download-card h2 { font-size: 1.25rem; margin-bottom: 8px; }
+.download-card p { font-size: 0.88rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+.download-btns { display: flex; flex-direction: column; gap: 10px; }
+.download-btns .btn { width: 100%; min-height: 48px; }
+.sheet-overlay {
+  position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+  display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+.sheet-overlay.open { opacity: 1; pointer-events: auto; }
+.sheet {
+  width: 100%; max-width: 480px; max-height: 85dvh; background: var(--s0);
+  border-radius: 24px 24px 0 0; border: 1px solid var(--line-strong); border-bottom: none;
+  padding: 12px 20px calc(24px + var(--safe-b)); overflow-y: auto;
+  transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.sheet-overlay.open .sheet { transform: translateY(0); }
+.sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--line-strong); margin: 0 auto 16px; }
+.sheet-sprite { width: 120px; height: 120px; margin: 0 auto 12px; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(0,0,0,0.4)); }
+.sheet-name { text-align: center; font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 8px; }
+.sheet-types { display: flex; justify-content: center; gap: 6px; margin-bottom: 16px; }
+.sheet-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.sheet-meta-item { padding: 12px; border-radius: 14px; background: var(--s1); border: 1px solid var(--line); }
+.sheet-meta-label { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); margin-bottom: 4px; }
+.sheet-meta-val { font-size: 0.85rem; font-weight: 500; }
+.matchup-row { margin-bottom: 12px; }
+.matchup-label { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.sheet-actions { display: flex; gap: 8px; margin-top: 8px; }
+.sheet-actions .btn { flex: 1; }
+.nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; display: flex; justify-content: center;
+  padding: 0 0 var(--safe-b); background: rgba(7,8,11,0.92);
+  backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  border-top: 1px solid var(--line);
+}
+.nav-inner { display: flex; width: 100%; max-width: 480px; height: var(--nav-h); }
+.nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  color: var(--dim); font-size: 0.58rem; font-weight: 500; letter-spacing: 0.02em; transition: color 0.15s;
+}
+.nav-item.on { color: var(--gold); }
+.nav-item svg { width: 22px; height: 22px; stroke-width: 1.7; }
+.nav-item.on svg { stroke-width: 2; }
+.empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+.empty p { font-size: 0.88rem; margin-top: 8px; }
+.hidden { display: none !important; }
+.mt-14 { margin-top: 14px; }
+.mt-18 { margin-top: 18px; }
+.t-normal{background:#a8a87822;color:#c8c898}.t-fire{background:#f0803022;color:#f8a060}
+.t-water{background:#6890f022;color:#88b0ff}.t-electric{background:#f8d03022;color:#f8e060}
+.t-grass{background:#78c85022;color:#98e070}.t-ice{background:#98d8d822;color:#b8f0f0}
+.t-fighting{background:#c0302822;color:#e06058}.t-poison{background:#a040a022;color:#c070c0}
+.t-ground{background:#e0c06822;color:#e8d090}.t-flying{background:#a890f022;color:#c0b0ff}
+.t-psychic{background:#f8588822;color:#ff88a8}.t-bug{background:#a8b82022;color:#c0d040}
+.t-rock{background:#b8a03822;color:#d0c060}.t-ghost{background:#70589822;color:#9880c0}
+.t-dragon{background:#7038f822;color:#9070ff}.t-dark{background:#70584822;color:#988070}
+.t-steel{background:#b8b8d022;color:#d0d0e8}.t-fairy{background:#ee99ac22;color:#ffb0c0}
+html[data-theme="jolteon"] { --gold: #ffd93b; --gold-rgb: 255,217,59; }
+html[data-theme="vaporeon"]{ --gold: #4f9fe0; --gold-rgb: 79,159,224; }
+html[data-theme="glaceon"] { --gold: #8fd8e8; --gold-rgb: 143,216,232; }
+html[data-theme="espeon"]  { --gold: #b98ae0; --gold-rgb: 185,138,224; }
+html[data-theme="leafeon"] { --gold: #7fc85c; --gold-rgb: 127,200,92; }
+html[data-theme="sylveon"] { --gold: #ff9dc2; --gold-rgb: 255,157,194; }
+html[data-theme="umbreon"] { --gold: #b07d1c; --gold-rgb: 176,125,28; }
+.icon-btn {
+  width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center;
+  background: var(--s2); border: 1px solid var(--line); color: var(--soft);
+}
+.icon-btn:active { transform: scale(0.94); }
+.icon-btn svg { width: 17px; height: 17px; }
+.header-right { display: flex; align-items: center; gap: 10px; }
+.scrim {
+  position: fixed; inset: 0; z-index: 60; background: rgba(4,5,7,0.6);
+  backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.scrim.on { opacity: 1; pointer-events: auto; }
+.drawer {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 61;
+  max-width: 480px; margin: 0 auto; max-height: 82dvh;
+  background: var(--s0); border: 1px solid var(--line-strong); border-bottom: none;
+  border-radius: 26px 26px 0 0;
+  transform: translateY(101%); transition: transform .26s cubic-bezier(.32,.72,0,1);
+  display: flex; flex-direction: column; padding: 10px 16px calc(24px + var(--safe-b));
+  overflow-y: auto; box-shadow: 0 -18px 40px rgba(0,0,0,0.5);
+}
+.drawer.on { transform: translateY(0); }
+@keyframes pb-shake {
+  0%,26% { transform: rotate(0) }
+  4% { transform: rotate(-13deg) } 8% { transform: rotate(12deg) }
+  12% { transform: rotate(-9deg) } 16% { transform: rotate(8deg) }
+  20% { transform: rotate(-4deg) } 24%,100% { transform: rotate(0) }
+}
+@keyframes pb-top {
+  0%,30% { transform: translateY(0) rotate(0); opacity: 1 }
+  42% { transform: translateY(-16px) rotate(-26deg); opacity: 1 }
+  56%,100% { transform: translateY(-22px) rotate(-36deg); opacity: 0 }
+}
+@keyframes pb-bot {
+  0%,30% { transform: translateY(0) rotate(0); opacity: 1 }
+  42% { transform: translateY(12px) rotate(18deg); opacity: 1 }
+  56%,100% { transform: translateY(18px) rotate(26deg); opacity: 0 }
+}
+@keyframes pb-flash {
+  0%,30% { transform: scale(0.2); opacity: 0 }
+  38% { transform: scale(1.5); opacity: 0.95 }
+  52% { transform: scale(2.1); opacity: 0 }
+  100% { transform: scale(0.2); opacity: 0 }
+}
+@keyframes pb-pika {
+  0%,32% { transform: scale(0.3) translateY(8px); opacity: 0 }
+  44% { transform: scale(1.18) translateY(-4px); opacity: 1 }
+  52% { transform: scale(1) translateY(0); opacity: 1 }
+  84% { transform: scale(1) translateY(-3px); opacity: 1 }
+  94%,100% { transform: scale(0.6) translateY(6px); opacity: 0 }
+}
+.pb-stage { position: relative; width: 62px; height: 62px; flex-shrink: 0; }
+.pb-ball { position: absolute; inset: 5px; animation: pb-shake 4.6s ease-in-out infinite; }
+.pb-half {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: linear-gradient(to bottom, var(--gold) 0 47%, #0b0c10 47% 53%, #f4f6fb 53% 100%);
+  box-shadow: inset 0 0 0 2px #0b0c10;
+}
+.pb-half.top { clip-path: inset(0 0 50% 0); animation: pb-top 4.6s ease-in-out infinite; }
+.pb-half.bot { clip-path: inset(50% 0 0 0); animation: pb-bot 4.6s ease-in-out infinite; }
+.pb-seam {
+  position: absolute; left: 50%; top: 50%; margin: -8px 0 0 -8px;
+  width: 16px; height: 16px; border-radius: 50%; background: #f4f6fb;
+  box-shadow: 0 0 0 2.5px #0b0c10;
+  animation: pb-seam 4.6s ease-in-out infinite;
+}
+@keyframes pb-seam {
+  0%,30% { transform: scale(1); opacity: 1 }
+  40%,100% { transform: scale(0.6); opacity: 0 }
+}
+.pb-flash {
+  position: absolute; left: 50%; top: 50%; margin: -14px 0 0 -14px; width: 28px; height: 28px;
+  border-radius: 50%; background: radial-gradient(circle, #fff, rgba(var(--gold-rgb),0.6) 55%, transparent 70%);
+  animation: pb-flash 4.6s ease-in-out infinite; pointer-events: none;
+}
+.pb-pika {
+  position: absolute; left: 50%; top: 50%; margin: -27px 0 0 -27px; width: 54px; height: 54px;
+  object-fit: contain;
+  animation: pb-pika 4.6s cubic-bezier(.3,1.4,.5,1) infinite;
+}
+@keyframes ab-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes ab-spin { to { transform: rotate(360deg); } }
+.ab-hero {
+  position: relative; overflow: hidden; border-radius: 30px; padding: 30px 20px 26px;
+  background: radial-gradient(120% 90% at 85% 8%, rgba(var(--gold-rgb),0.30), transparent 58%), var(--s1);
+  border: 1px solid var(--line-strong);
+}
+.ab-rings { position: absolute; right: -78px; top: -78px; width: 240px; height: 240px; animation: ab-spin 26s linear infinite; }
+.ab-rings i { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(var(--gold-rgb),0.30); }
+.ab-rings i:nth-child(2) { inset: 26px; border-color: rgba(var(--gold-rgb),0.20); }
+.ab-rings i:nth-child(3) { inset: 52px; border-width: 12px; border-color: rgba(var(--gold-rgb),0.14); }
+.ab-title { font-size: 2.5rem; font-weight: 700; letter-spacing: -0.05em; line-height: 0.92; }
+.ab-title em { font-style: normal; color: var(--gold); }
+.ab-marquee { overflow: hidden; margin-top: 12px; mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+.ab-marquee > div { display: flex; width: max-content; animation: ab-marquee 22s linear infinite; }
+.ab-marquee span {
+  font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--gold); padding-right: 20px;
+}
+.ab-bento { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.ab-tile {
+  position: relative; overflow: hidden; border-radius: 22px; padding: 16px;
+  background: var(--s1); border: 1px solid var(--line);
+}
+.ab-tile.wide { grid-column: span 2; }
+.ab-tile.accent { background: linear-gradient(150deg, rgba(var(--gold-rgb),0.20), var(--s1) 70%); border-color: var(--gold-line); }
+.ab-lab { font-family: var(--mono); font-size: 0.5rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); }
+.ab-big { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.035em; margin-top: 10px; }
+.ab-cta {
+  display: flex; align-items: center; gap: 14px; margin-top: 12px; padding: 18px;
+  border-radius: 22px; background: var(--gold); color: #0b0c10;
+}
+.side-scrim {
+  position: fixed; inset: 0; z-index: 62; background: rgba(4,5,7,0.55);
+  backdrop-filter: blur(10px) saturate(1.1); -webkit-backdrop-filter: blur(10px) saturate(1.1);
+  opacity: 0; pointer-events: none; transition: opacity .22s;
+}
+.side-scrim.on { opacity: 1; pointer-events: auto; }
+.side {
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 63; width: 78%; max-width: 300px;
+  background: var(--s0); border-right: 1px solid var(--line-strong);
+  transform: translateX(-101%); transition: transform .26s cubic-bezier(.32,.72,0,1);
+  display: flex; flex-direction: column; padding: 18px 14px calc(20px + var(--safe-b));
+  box-shadow: 18px 0 44px rgba(0,0,0,0.5);
+}
+.side.on { transform: translateX(0); }
+.side-row {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px;
+  border-radius: 14px; background: var(--s1); border: 1px solid var(--line); text-align: left;
+  min-height: 56px; transition: border-color .15s;
+}
+.side-row + .side-row { margin-top: 8px; }
+.side-row:hover { border-color: var(--gold-line); }
+.side-row-ico { width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px; display: grid; place-items: center; background: var(--gold-soft); color: var(--gold); }
+.side-row-ico svg { width: 17px; height: 17px; }
+.side-row-title { font-size: 0.92rem; font-weight: 700; }
+.side-row-sub { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); margin-top: 2px; }
+.dl-hero { padding: 26px 20px; text-align: center; }
+.hero-shot { position: relative; border-radius: var(--radius-xl); overflow: hidden; border: 1px solid var(--line-strong); }
+.hero-shot-img { position: relative; width: 100%; aspect-ratio: 1920 / 985; }
+.hero-shot-plate {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 18px 14px; pointer-events: none;
+  background: linear-gradient(to top, rgba(7,8,11,0.94) 18%, rgba(7,8,11,0.6) 55%, transparent);
+}
+.shot-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.shot-strip::-webkit-scrollbar { display: none; }
+.shot-strip image-slot { width: 236px; height: 133px; flex-shrink: 0; }
+.pokeball-bg {
+  position: absolute; right: -46px; top: -46px; width: 190px; height: 190px; border-radius: 50%;
+  border: 14px solid rgba(var(--gold-rgb),0.16); pointer-events: none;
+}
+.pokeball-bg::after {
+  content: ""; position: absolute; inset: 30px; border-radius: 50%;
+  border: 12px solid rgba(var(--gold-rgb),0.10);
+}
+.dl-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; background: var(--gold-soft); color: var(--gold); font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; }
+.dl-step { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+.dl-step:first-of-type { border-top: none; }
+.dl-num { width: 24px; height: 24px; flex-shrink: 0; border-radius: 8px; display: grid; place-items: center; background: var(--gold-soft); color: var(--gold); font-family: var(--mono); font-size: 0.68rem; font-weight: 600; }
+.dl-spec { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); font-size: 0.84rem; }
+.dl-spec:first-of-type { border-top: none; }
+.dl-spec span:first-child { color: var(--muted); }
+.sheet-grab { width: 40px; height: 4px; border-radius: 3px; background: var(--s3); margin: 0 auto 14px; flex-shrink: 0; }
+.drawer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.drawer-title { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; }
+.crumb { font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.theme-row {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  border-radius: 14px; background: var(--s1); border: 1px solid var(--line); text-align: left;
+  transition: border-color .15s;
+}
+.theme-row + .theme-row { margin-top: 8px; }
+.theme-row.on { border-color: var(--gold-line); background: var(--gold-soft); }
+.theme-dot { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 1px rgba(255,255,255,0.12) inset; }
+.theme-name { flex: 1; font-size: 0.9rem; font-weight: 600; }
+.theme-check { width: 16px; height: 16px; color: var(--gold); opacity: 0; }
+.theme-row.on .theme-check { opacity: 1; }
+@media (min-width: 520px) { .app { border-left: 1px solid var(--line); border-right: 1px solid var(--line); } }
+</style>
+<script src="./image-slot.js"></script>
+</head>
+<body>
+<div class="ambient" aria-hidden="true"></div>
+<div class="app" id="app">
+  <header class="header">
+    <div class="brand">
+      <button class="brand-mark" id="btnMenu" type="button" aria-label="Themes">
+        <svg viewBox="0 0 24 24">
+          <rect x="0" y="0" width="24" height="12" fill="var(--gold)"/>
+          <rect x="0" y="12" width="24" height="12" fill="#f4f6fb"/>
+          <rect x="0" y="10.8" width="24" height="2.4" fill="#07080b"/>
+          <circle cx="12" cy="12" r="4" fill="#f4f6fb" stroke="#07080b" stroke-width="2.2"/>
+        </svg>
+      </button>
+      <div>
+        <div class="brand-name">Pokeland Helper</div>
+        <div class="brand-sub">Live · Player tools</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="clocks">
+        <div class="clock"><span>HKT</span><span id="clockHK">--:--:--</span></div>
+        <div class="clock"><span>ICT</span><span id="clockICT">--:--:--</span></div>
+      </div>
+      <button class="icon-btn" id="btnSide" type="button" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
+      </button>
+    </div>
+  </header>
+  <main class="main">
+    <section id="view-board">
+      <div class="card card-glow hero" id="heroCard">
+        <div class="hero-top">
+          <div class="hero-info">
+            <div class="kicker gold" id="heroDate">TODAY</div>
+            <div class="hero-name" id="heroName">—</div>
+            <div class="type-row" id="heroTypes"></div>
+          </div>
+          <div class="hero-sprite-wrap">
+            <img class="hero-sprite" id="heroSprite" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary" id="btnWatch">Watch</button>
+          <button class="btn btn-ghost" id="btnHeroDetail">Details</button>
+        </div>
+        <div class="reset-bar">
+          <div class="reset-head">
+            <span class="reset-label">Daily reset</span>
+            <span class="reset-time" id="resetIn">--:--:--</span>
+          </div>
+          <div class="progress"><div class="progress-fill" id="resetBar" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="promo-grid">
+        <button class="card build-promo" data-go="builds" type="button">
+          <div class="build-promo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v16H5.5A1.5 1.5 0 0 0 4 20.5z"/><path d="M4 17.5A1.5 1.5 0 0 1 5.5 16H19"/><path d="M8.5 7.5h6"/><path d="M8.5 11h4"/></svg>
+          </div>
+          <div class="build-promo-text">
+            <div class="build-promo-title">Pokemon Guide</div>
+            <div class="build-promo-sub">Roles &amp; items · Soon</div>
+          </div>
+          <svg class="build-promo-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="card build-promo" data-go="teams" type="button">
+          <div class="build-promo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17.5" cy="9.5" r="2.2"/><path d="M16 15.6A4.6 4.6 0 0 1 21.5 20"/></svg>
+          </div>
+          <div class="build-promo-text">
+            <div class="build-promo-title">Team Builds</div>
+            <div class="build-promo-sub">Comps &amp; synergy · Soon</div>
+          </div>
+          <svg class="build-promo-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+      <div class="stats">
+        <button class="stat" id="statEvent" type="button">
+          <span class="stat-label">Next event</span>
+          <span class="stat-value" id="statEvName">—</span>
+          <span class="stat-meta" id="statEvCd">—</span>
+        </button>
+        <button class="stat" id="statServer" type="button">
+          <span class="stat-label">Next server</span>
+          <span class="stat-value" id="statSrvNum">#—</span>
+          <span class="stat-meta" id="statSrvCd">—</span>
+        </button>
+      </div>
+      <div class="section">
+        <div class="section-head">
+          <span class="section-title">This week</span>
+          <button class="section-link" data-go="rotation">Full rotation →</button>
+        </div>
+        <div class="week-scroll" id="weekStrip"></div>
+      </div>
+      <div class="section" id="favSection">
+        <div class="section-head"><span class="section-title">Watchlist</span></div>
+        <div class="fav-row" id="favList"></div>
+        <div class="empty hidden" id="favEmpty"><p>Star legendaries to track them here</p></div>
+      </div>
+      <div class="section">
+        <div class="section-head">
+          <span class="section-title">Upcoming events</span>
+          <button class="section-link" data-go="events">All →</button>
+        </div>
+        <div class="event-list" id="boardEvents"></div>
+      </div>
+    </section>
+    <section id="view-rotation" class="hidden">
+      <div class="search-bar">
+        <input class="search-input" id="rotSearch" type="search" placeholder="Search legendaries…" autocomplete="off">
+        <button class="filter-btn" id="favFilter">★ Watchlist</button>
+      </div>
+      <div id="rotResults" class="result-list hidden"></div>
+      <div id="rotCalendar">
+        <div class="cal-nav">
+          <button id="rotPrev" aria-label="Previous month">‹</button>
+          <div class="cal-month" id="rotMonth">—</div>
+          <button id="rotNext" aria-label="Next month">›</button>
+        </div>
+        <div class="cal-grid" id="rotGrid"></div>
+      </div>
+    </section>
+    <section id="view-weather" class="hidden">
+      <div class="wx-tabs" id="wxTabs">
+        <button class="wx-tab on" data-wxtab="now">Now</button>
+        <button class="wx-tab" data-wxtab="calendar">Calendar</button>
+        <button class="wx-tab" data-wxtab="find">Find</button>
+        <button class="wx-tab" data-wxtab="alerts">Alerts</button>
+      </div>
+      <div id="wxNow">
+        <div class="wx-hero" id="wxHero" style="background:linear-gradient(155deg,rgba(90,167,216,0.18),var(--s0));border-color:rgba(90,167,216,0.3)">
+          <div class="wx-hero-top">
+            <div>
+              <div class="kicker" id="wxKicker">Live feed</div>
+              <div class="wx-title" id="wxTitle">Syncing…</div>
+              <div class="wx-window" id="wxWindow">Reaching weather feed…</div>
+            </div>
+            <img class="wx-icon" id="wxIcon" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEALAAAAAABAAEAAAICTAEAOw==">
+          </div>
+          <div class="wx-cd-block">
+            <span class="wx-cd" id="wxCd">--:--:--</span>
+            <span class="wx-cd-label" id="wxCdLabel"></span>
+          </div>
+          <div class="wx-sync">
+            <span class="dot gold" id="wxDot"></span>
+            <span id="wxSync">Connecting</span>
+            <button style="margin-left:auto;font-family:var(--mono);font-size:0.58rem;color:var(--gold)" id="wxRefresh">Refresh</button>
+          </div>
+        </div>
+        <div class="spawn-section" id="spawnSection">
+          <div class="kicker" id="spawnHeading">Spawns</div>
+          <div id="spawnGroups"></div>
+        </div>
+        <div class="wx-day-list" id="wxDays"></div>
+      </div>
+      <div id="wxCalendar" class="hidden">
+        <div class="cal-nav">
+          <button id="wxMonthPrev">‹</button>
+          <div class="cal-month" id="wxMonthLabel">—</div>
+          <button id="wxMonthNext">›</button>
+        </div>
+        <p style="font-size:0.75rem;color:var(--muted);margin-bottom:12px" id="wxMonthStatus"></p>
+        <div class="cal-grid" id="wxCells"></div>
+        <div class="mt-18">
+          <div class="kicker" id="wxPickedLabel">Pick a day</div>
+          <div id="wxPickedEvents"></div>
+        </div>
+      </div>
+      <div id="wxFind" class="hidden">
+        <div class="search-bar">
+          <input class="search-input" id="wxQuery" type="search" placeholder="Pokémon or weather type…" autocomplete="off">
+        </div>
+        <div class="type-row" id="wxTypeChips" style="margin-bottom:14px;flex-wrap:wrap"></div>
+        <div id="wxHits" class="result-list"></div>
+        <div class="empty" id="wxFindHint"><p>Type a name or pick a weather type</p></div>
+      </div>
+      <div id="wxAlerts" class="hidden">
+        <div class="card" style="padding:18px;margin-bottom:14px">
+          <div class="kicker">Notifications</div>
+          <p style="font-size:0.85rem;color:var(--soft);margin:8px 0 14px" id="notifText">Allow notifications to get a heads-up before a weather window opens.</p>
+          <button class="btn btn-primary" id="notifBtn" style="width:100%">Enable notifications</button>
+        </div>
+        <div id="wxAlertRows"></div>
+      </div>
+    </section>
+    <section id="view-events" class="hidden">
+      <div class="kicker gold" id="evDate">—</div>
+      <div class="event-list" id="eventsFull" style="margin-top:12px"></div>
+    </section>
+    <section id="view-server" class="hidden">
+      <div class="server-hero">
+        <div class="kicker gold">Next server open</div>
+        <div class="server-num" id="serverNum">#—</div>
+        <div class="server-when" id="serverWhen">—</div>
+        <div class="countdown-blocks" id="serverBlocks"></div>
+      </div>
+      <div class="server-list" id="serverList"></div>
+    </section>
+    <section id="view-download" class="hidden">
+      <div class="hero-shot">
+        <div class="hero-shot-img">
+          <image-slot id="dlHero" shape="rect" fit="cover" src="./banner.jpg" placeholder="Drop the game splash screen"></image-slot>
+        </div>
+        <div class="hero-shot-plate">
+          <h2 style="font-size:1.35rem;font-weight:700;letter-spacing:-0.03em;line-height:1.1">Download the game</h2>
+          <p style="font-family:var(--mono);font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--soft);margin-top:6px">Pokeland Legends · 100M+ trainers</p>
+        </div>
+      </div>
+      <div class="card mt-18" style="padding:18px">
+        <p style="font-size:0.88rem;color:var(--soft);line-height:1.55;text-wrap:pretty">Catch, train and awaken legendaries across live servers. Grab the client and start on the newest server.</p>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+          <a class="btn btn-primary" href="https://www.pokelandlegends.com/download" target="_blank" rel="noopener">Official site · Download</a>
+          <a class="btn" href="https://www.facebook.com/pokemondsland/" target="_blank" rel="noopener">Official Facebook page</a>
+        </div>
+        <div style="font-family:var(--mono);font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-top:14px">Official links only</div>
+      </div>
+
+      <div class="mt-18">
+        <div class="kicker" style="padding-left:2px">Screens</div>
+        <div class="shot-strip">
+          <image-slot id="dlShot1" shape="rounded" radius="16" src="https://cdn.aptoide.com/imgs/d/a/a/daabe80accd54371af7abafbcc3d62f5_screen.jpg" placeholder=""></image-slot>
+          <image-slot id="dlShot2" shape="rounded" radius="16" src="https://cdn.aptoide.com/imgs/3/2/c/32c2f1d65e7dd954e222379c9e711279_screen.jpg" placeholder=""></image-slot>
+          <image-slot id="dlShot3" shape="rounded" radius="16" src="https://cdn.aptoide.com/imgs/2/a/c/2ac34fbb16bd0255198613f09cc67718_screen.jpg" placeholder=""></image-slot>
+          <image-slot id="dlShot4" shape="rounded" radius="16" src="https://cdn.aptoide.com/imgs/e/9/c/e9c1511c44f0fe0861e42cc33735614b_screen.jpg" placeholder=""></image-slot>
+          <image-slot id="dlShot5" shape="rounded" radius="16" src="https://cdn.aptoide.com/imgs/d/4/2/d42e9a7b305ddab2ce6fe3e9c45421d2_screen.jpg" placeholder=""></image-slot>
+        </div>
+      </div>
+
+      <div class="card mt-18" style="padding:18px">
+        <div class="kicker">How to install</div>
+        <div class="dl-step"><span class="dl-num">1</span><div><div style="font-size:0.88rem;font-weight:600">Download the client</div><div style="font-size:0.8rem;color:var(--muted);margin-top:2px">Get the APK from pokelandlegends.com. On Android allow install from unknown sources when prompted.</div></div></div>
+        <div class="dl-step"><span class="dl-num">2</span><div><div style="font-size:0.88rem;font-weight:600">Let resources unpack</div><div style="font-size:0.8rem;color:var(--muted);margin-top:2px">First launch downloads the asset packs — use Wi-Fi and keep the app open.</div></div></div>
+        <div class="dl-step"><span class="dl-num">3</span><div><div style="font-size:0.88rem;font-weight:600">Pick a server</div><div style="font-size:0.8rem;color:var(--muted);margin-top:2px">New servers reset rankings — check the Server tab for the next opening time.</div></div></div>
+        <div class="dl-step"><span class="dl-num">4</span><div><div style="font-size:0.88rem;font-weight:600">Bind your account</div><div style="font-size:0.8rem;color:var(--muted);margin-top:2px">Sign in with Facebook or your Jodo account so progress survives a reinstall.</div></div></div>
+      </div>
+
+      <div class="card mt-18" style="padding:18px">
+        <div class="kicker">Requirements</div>
+        <div style="margin-top:8px">
+          <div class="dl-spec"><span>Platform</span><span>Android 5.1+ (APK)</span></div>
+          <div class="dl-spec"><span>Size</span><span>~1 GB</span></div>
+          <div class="dl-spec"><span>Latest version</span><span>1.1.4</span></div>
+          <div class="dl-spec"><span>Sign-in</span><span>Facebook or Jodo</span></div>
+          <div class="dl-spec"><span>Servers</span><span>HKT timezone (UTC+8)</span></div>
+        </div>
+      </div>
+
+      <div class="card mt-18" style="padding:18px">
+        <div class="kicker">Day one tips</div>
+        <p style="font-size:0.85rem;color:var(--soft);line-height:1.55;margin-top:8px;text-wrap:pretty">Save diamonds for the first legendary rotation. Claim all three daily Vit Gift windows — friendship vit is the slowest resource in the game. Weather boosts follow Vietnam time (ICT), so check the Weather tab before you plan a catch run.</p>
+      </div>
+    </section>
+    <section id="view-builds" class="hidden">
+      <div class="empty">
+        <div class="kicker gold" style="margin-bottom:10px">Pokemon Guide</div>
+        <p style="font-size:1.05rem;font-weight:700;color:var(--soft);margin-top:0">Coming soon</p>
+        <p style="margin-top:6px">Per-Pokemon pages for Pokeland Legends: best nature and character (role), skill and awakening priority, held item and gem picks, vit and friendship targets, plus counters by type — for legendaries and key farm units.</p>
+      </div>
+    </section>
+    <section id="view-teams" class="hidden">
+      <div class="empty">
+        <div class="kicker gold" style="margin-bottom:10px">Team Builds</div>
+        <p style="font-size:1.05rem;font-weight:700;color:var(--soft);margin-top:0">Coming soon</p>
+        <p style="margin-top:6px">Ready-made 6-slot line-ups for Pokeland Legends: Elite Trainer &amp; Tower runs, World Boss damage teams, Guild War attack and defense comps — with type coverage, formation slots, held items and lead order.</p>
+      </div>
+    </section>
+    <section id="view-about" class="hidden">
+      <div class="ab-hero">
+        <div class="ab-rings" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="ab-lab" style="color:var(--gold)">Pokeland Helper</div>
+        <h2 class="ab-title" style="margin-top:14px">Never<br>miss a<br><em>window.</em></h2>
+        <p style="font-size:0.86rem;color:var(--soft);line-height:1.55;margin-top:16px;max-width:26ch;text-wrap:pretty">A fan-made companion for Pokeland Legends — built by two players who kept missing boosts.</p>
+      </div>
+
+      <div class="ab-marquee" aria-hidden="true"><div><span>Rotation</span><span>&#9679;</span><span>Weather</span><span>&#9679;</span><span>Events</span><span>&#9679;</span><span>Servers</span><span>&#9679;</span><span>Timers</span><span>&#9679;</span><span>Guides</span><span>&#9679;</span><span>Builds</span><span>&#9679;</span><span>Rotation</span><span>&#9679;</span><span>Weather</span><span>&#9679;</span><span>Events</span><span>&#9679;</span><span>Servers</span><span>&#9679;</span><span>Timers</span><span>&#9679;</span><span>Guides</span><span>&#9679;</span><span>Builds</span><span>&#9679;</span></div></div>
+
+      <div class="ab-bento">
+        <div class="ab-tile accent wide" style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:104px">
+          <div>
+            <div class="ab-lab">Built by</div>
+            <div class="ab-big">3ds &amp; Specter</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:3px">Virpal &amp; Jatin</div>
+          </div>
+          <div class="pb-stage" aria-hidden="true">
+            <div class="pb-ball">
+              <div class="pb-half top"></div>
+              <div class="pb-half bot"></div>
+              <div class="pb-seam"></div>
+            </div>
+            <div class="pb-flash"></div>
+            <img class="pb-pika" id="abMon" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" alt="">
+          </div>
+        </div>
+        <div class="ab-tile wide" style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:1.05rem;color:var(--gold)">&#9829;</span>
+          <span style="font-size:0.84rem;color:var(--soft);text-wrap:pretty">Made with love, by two Pokeland players.</span>
+        </div>
+      </div>
+
+      <a class="ab-cta" href="mailto:pokehelp6@gmail.com?subject=Pokeland%20Helper%20feedback">
+        <span style="flex:1;min-width:0">
+          <span style="display:block;font-size:0.95rem;font-weight:700;letter-spacing:-0.02em">Tell us what's wrong</span>
+          <span style="display:block;font-family:var(--mono);font-size:0.64rem;margin-top:3px;opacity:0.72;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">pokehelp6@gmail.com</span>
+        </span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0"><path d="M5 12h13"/><path d="M13 6l6 6-6 6"/></svg>
+      </a>
+
+      <p style="font-size:0.7rem;color:var(--dim);line-height:1.55;margin-top:18px;padding:0 4px;text-align:center;text-wrap:pretty">Unofficial fan project. Not affiliated with Pokeland Legends, FANKEY, Nintendo or The Pokemon Company.</p>
+    </section>
+  </main>
+  <div class="side-scrim" id="sideScrim"></div>
+  <aside class="side" id="side" aria-label="Menu">
+    <div class="drawer-head">
+      <div class="drawer-title">Menu</div>
+      <button class="icon-btn" id="btnSideClose" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <button class="side-row" data-side="download" type="button">
+      <span class="side-row-ico">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11"/><path d="M8 10.5l4 3.5 4-3.5"/><path d="M4 17.5v1.5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1.5"/></svg>
+      </span>
+      <span>
+        <span class="side-row-title">Game</span>
+        <span class="side-row-sub">Download the game</span>
+      </span>
+    </button>
+    <button class="side-row" data-side="about" type="button">
+      <span class="side-row-ico">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><circle cx="12" cy="7.8" r=".9" fill="currentColor" stroke="none"/></svg>
+      </span>
+      <span>
+        <span class="side-row-title">About us</span>
+        <span class="side-row-sub">Who builds this</span>
+      </span>
+    </button>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer" id="drawer" aria-label="Themes">
+    <div class="sheet-grab"></div>
+    <div class="drawer-head">
+      <div class="drawer-title">Themes</div>
+      <button class="icon-btn" id="btnClose" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div id="themeList"></div>
+  </aside>
+  <div class="sheet-overlay" id="sheetOverlay">
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true">
+      <div class="sheet-handle"></div>
+      <img class="sheet-sprite" id="sheetSprite" alt="">
+      <div class="sheet-name" id="sheetName">—</div>
+      <div class="sheet-types" id="sheetTypes"></div>
+      <div class="sheet-meta">
+        <div class="sheet-meta-item"><div class="sheet-meta-label">Nature</div><div class="sheet-meta-val" id="sheetNature">—</div></div>
+        <div class="sheet-meta-item"><div class="sheet-meta-label">Held item</div><div class="sheet-meta-val" id="sheetItem">—</div></div>
+        <div class="sheet-meta-item" style="grid-column:1/-1"><div class="sheet-meta-label">Next appearance</div><div class="sheet-meta-val" id="sheetNext">—</div></div>
+      </div>
+      <div class="matchup-row"><div class="matchup-label">Weak to</div><div class="type-row" id="sheetWeak"></div></div>
+      <div class="matchup-row"><div class="matchup-label">Resists</div><div class="type-row" id="sheetResist"></div></div>
+      <div class="sheet-actions">
+        <button class="btn btn-primary" id="sheetFav">Add to watchlist</button>
+        <a class="btn" id="sheetWiki" href="#" target="_blank" rel="noopener">Wiki</a>
+      </div>
+    </div>
+  </div>
+  <nav class="nav" aria-label="Main">
+    <div class="nav-inner">
+      <button class="nav-item on" data-view="board">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+        Board
+      </button>
+      <button class="nav-item" data-view="rotation">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Rotation
+      </button>
+      <button class="nav-item" data-view="weather">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2M12 19v2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M3 12h2M19 12h2M5.6 18.4l1.4-1.4M17 7l1.4-1.4"/><circle cx="12" cy="12" r="4"/></svg>
+        Weather
+      </button>
+      <button class="nav-item" data-view="events">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+        Events
+      </button>
+      <button class="nav-item" data-view="server">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="8" rx="2"/><rect x="2" y="13" width="20" height="8" rx="2"/><path d="M6 7h.01M6 17h.01"/></svg>
+        Server
+      </button>
+    </div>
+  </nav>
+</div>
+<script>
+
+/* ═══ EXACT ORIGINAL DATA ═══ */
+const rotation = [
+  "Deoxys","Ho-oh","Diancie","Greninja (Bond Form)","Tapu-Bulu","Terrakion","Poipole",
+  "Genesect","Groudon","Darkrai","Zeraora","Celesteela","Cobalion","Meloetta",
+  "Tapu-Koko","Tapu-Lele","Regigigas","Latios","Nihilego","Suicune","Landorus",
+  "Tapu-Fini","Zygarde","Latias","Keldeo","Buzzwole","Magearna","Azelf",
+  "Tornadus","Stakataka","Heatran","Marshadow","Raikou","Cresselia","Thundurus",
+  "Yveltal","Zoroark","Lugia","Solgaleo","Blacephalon","Celebi","Shaymin (Land Form)",
+  "Dialga","Palkia","Xerneas","Victini","Silvally","Uxie","Mesprit",
+  "Lunala","Mewtwo","Volcanion","Jirachi","Xurkitree","Kartana","Virizion"
+];
+
+const pokedexId = {
+  "Deoxys":386,"Ho-oh":250,"Diancie":719,"Greninja (Bond Form)":658,"Tapu-Bulu":787,
+  "Terrakion":639,"Poipole":803,"Genesect":649,"Groudon":383,"Darkrai":491,"Zeraora":807,
+  "Celesteela":797,"Cobalion":638,"Meloetta":648,"Tapu-Koko":785,"Tapu-Lele":786,
+  "Regigigas":486,"Latios":381,"Nihilego":793,"Suicune":245,"Landorus":645,
+  "Tapu-Fini":788,"Zygarde":718,"Latias":380,"Keldeo":647,"Buzzwole":794,
+  "Magearna":801,"Azelf":482,"Tornadus":641,"Stakataka":805,"Heatran":485,
+  "Marshadow":802,"Raikou":243,"Cresselia":488,"Thundurus":642,"Yveltal":717,
+  "Zoroark":571,"Lugia":249,"Solgaleo":791,"Blacephalon":806,"Celebi":251,
+  "Shaymin (Land Form)":492,"Dialga":483,"Palkia":484,"Xerneas":716,"Victini":494,
+  "Silvally":773,"Uxie":480,"Mesprit":481,"Lunala":792,"Mewtwo":150,"Volcanion":721,
+  "Jirachi":385,"Xurkitree":796,"Kartana":798,"Virizion":640
+};
+
+const showdownSlug = {
+  "Deoxys":"deoxys","Ho-oh":"hooh","Diancie":"diancie","Greninja (Bond Form)":"greninjaash",
+  "Tapu-Bulu":"tapubulu","Terrakion":"terrakion","Poipole":"poipole","Genesect":"genesect",
+  "Groudon":"groudon","Darkrai":"darkrai","Zeraora":"zeraora","Celesteela":"celesteela",
+  "Cobalion":"cobalion","Meloetta":"meloetta","Tapu-Koko":"tapukoko","Tapu-Lele":"tapulele",
+  "Regigigas":"regigigas","Latios":"latios","Nihilego":"nihilego","Suicune":"suicune",
+  "Landorus":"landorus","Tapu-Fini":"tapufini","Zygarde":"zygarde","Latias":"latias",
+  "Keldeo":"keldeo","Buzzwole":"buzzwole","Magearna":"magearna","Azelf":"azelf",
+  "Tornadus":"tornadus","Stakataka":"stakataka","Heatran":"heatran","Marshadow":"marshadow",
+  "Raikou":"raikou","Cresselia":"cresselia","Thundurus":"thundurus","Yveltal":"yveltal",
+  "Zoroark":"zoroark","Lugia":"lugia","Solgaleo":"solgaleo","Blacephalon":"blacephalon",
+  "Celebi":"celebi","Shaymin (Land Form)":"shaymin","Dialga":"dialga","Palkia":"palkia",
+  "Xerneas":"xerneas","Victini":"victini","Silvally":"silvally","Uxie":"uxie",
+  "Mesprit":"mesprit","Lunala":"lunala","Mewtwo":"mewtwo","Volcanion":"volcanion",
+  "Jirachi":"jirachi","Xurkitree":"xurkitree","Kartana":"kartana","Virizion":"virizion"
+};
+
+const pokemonTypes = {
+  "Deoxys":["Psychic"],"Ho-oh":["Fire","Flying"],"Diancie":["Rock","Fairy"],
+  "Greninja (Bond Form)":["Water","Dark"],"Tapu-Bulu":["Grass","Fairy"],"Terrakion":["Rock","Fighting"],
+  "Poipole":["Poison"],"Genesect":["Bug","Steel"],"Groudon":["Ground"],"Darkrai":["Dark"],
+  "Zeraora":["Electric"],"Celesteela":["Steel","Flying"],"Cobalion":["Steel","Fighting"],
+  "Meloetta":["Normal","Psychic"],"Tapu-Koko":["Electric","Fairy"],"Tapu-Lele":["Psychic","Fairy"],
+  "Regigigas":["Normal"],"Latios":["Dragon","Psychic"],"Nihilego":["Rock","Poison"],
+  "Suicune":["Water"],"Landorus":["Ground","Flying"],"Tapu-Fini":["Water","Fairy"],
+  "Zygarde":["Dragon","Ground"],"Latias":["Dragon","Psychic"],"Keldeo":["Water","Fighting"],
+  "Buzzwole":["Bug","Fighting"],"Magearna":["Steel","Fairy"],"Azelf":["Psychic"],
+  "Tornadus":["Flying"],"Stakataka":["Rock","Steel"],"Heatran":["Fire","Steel"],
+  "Marshadow":["Fighting","Ghost"],"Raikou":["Electric"],"Cresselia":["Psychic"],
+  "Thundurus":["Electric","Flying"],"Yveltal":["Dark","Flying"],"Zoroark":["Dark"],
+  "Lugia":["Psychic","Flying"],"Solgaleo":["Psychic","Steel"],"Blacephalon":["Fire","Ghost"],
+  "Celebi":["Psychic","Grass"],"Shaymin (Land Form)":["Grass"],"Dialga":["Steel","Dragon"],
+  "Palkia":["Water","Dragon"],"Xerneas":["Fairy"],"Victini":["Psychic","Fire"],
+  "Silvally":["Normal"],"Uxie":["Psychic"],"Mesprit":["Psychic"],"Lunala":["Psychic","Ghost"],
+  "Mewtwo":["Psychic"],"Volcanion":["Fire","Water"],"Jirachi":["Steel","Psychic"],
+  "Xurkitree":["Electric"],"Kartana":["Grass","Steel"],"Virizion":["Grass","Fighting"]
+};
+
+const natureMap = {
+  "Ho-oh":"Cheerful or Stubborn","Dialga":"Modest or Timid","Palkia":"Timid or Modest",
+  "Celebi":"Timid or Cheerful","Zygarde":"Cheerful or Stubborn","Tornadus":"Timid",
+  "Regigigas":"Cheerful or Stubborn","Deoxys":"Modest or Timid","Groudon":"Cheerful or Stubborn",
+  "Tapu-Lele":"Timid","Lunala":"Modest or Timid"
+};
+
+const itemByType = {
+  "Dragon":"Dragon Fang","Flying":"Dragon Fang","Dark":"Dragon Fang",
+  "Steel":"Metal Coat","Psychic":"Metal Coat","Normal":"Metal Coat",
+  "Fighting":"Black Belt","Poison":"Black Belt","Ghost":"Black Belt",
+  "Water":"Mystic Water","Ice":"Mystic Water","Bug":"Mystic Water",
+  "Fire":"Elemental booster","Ground":"Elemental booster","Rock":"Elemental booster",
+  "Electric":"Elemental booster","Grass":"Elemental booster","Fairy":"Elemental booster"
+};
+
+const typeChart = {
+  Normal:{weak:["Fighting"],resist:[],immune:["Ghost"]},
+  Fire:{weak:["Water","Ground","Rock"],resist:["Fire","Grass","Ice","Bug","Steel","Fairy"],immune:[]},
+  Water:{weak:["Electric","Grass"],resist:["Fire","Water","Ice","Steel"],immune:[]},
+  Electric:{weak:["Ground"],resist:["Electric","Flying","Steel"],immune:[]},
+  Grass:{weak:["Fire","Ice","Poison","Flying","Bug"],resist:["Water","Electric","Grass","Ground"],immune:[]},
+  Ice:{weak:["Fire","Fighting","Rock","Steel"],resist:["Ice"],immune:[]},
+  Fighting:{weak:["Flying","Psychic","Fairy"],resist:["Bug","Rock","Dark"],immune:[]},
+  Poison:{weak:["Ground","Psychic"],resist:["Grass","Fighting","Poison","Bug","Fairy"],immune:[]},
+  Ground:{weak:["Water","Grass","Ice"],resist:["Poison","Rock"],immune:["Electric"]},
+  Flying:{weak:["Electric","Ice","Rock"],resist:["Grass","Fighting","Bug"],immune:["Ground"]},
+  Psychic:{weak:["Bug","Ghost","Dark"],resist:["Fighting","Psychic"],immune:[]},
+  Bug:{weak:["Fire","Flying","Rock"],resist:["Grass","Fighting","Ground"],immune:[]},
+  Rock:{weak:["Water","Grass","Fighting","Ground","Steel"],resist:["Normal","Fire","Poison","Flying"],immune:[]},
+  Ghost:{weak:["Ghost","Dark"],resist:["Poison","Bug"],immune:["Normal","Fighting"]},
+  Dragon:{weak:["Ice","Dragon","Fairy"],resist:["Fire","Water","Electric","Grass"],immune:[]},
+  Dark:{weak:["Fighting","Bug","Fairy"],resist:["Ghost","Dark"],immune:["Psychic"]},
+  Steel:{weak:["Fire","Fighting","Ground"],resist:["Normal","Grass","Ice","Flying","Psychic","Bug","Rock","Dragon","Steel","Fairy"],immune:["Poison"]},
+  Fairy:{weak:["Poison","Steel"],resist:["Fighting","Bug","Dark"],immune:["Dragon"]}
+};
+
+const typeColors = {
+  Normal:'#A8A878',Fire:'#F08030',Water:'#6890F0',Electric:'#F8D030',Grass:'#78C850',
+  Ice:'#98D8D8',Fighting:'#C03028',Poison:'#A040A0',Ground:'#E0C068',Flying:'#A890F0',
+  Psychic:'#F85888',Bug:'#A8B820',Rock:'#B8A038',Ghost:'#705898',Dragon:'#7038F8',
+  Dark:'#705848',Steel:'#B8B8D0',Fairy:'#EE99AC'
+};
+
+const DAILY_EVENTS = [
+  { id: 'reset', name: 'Day Reset', icon: '🌅', desc: 'Daily quests & activity reset', h: 5, m: 0, dur: 1, dow: null },
+  { id: 'vit1', name: 'Vit Gift (Noon)', icon: '⚡', desc: 'Pikachu friendship vit · 12–14', h: 12, m: 0, dur: 120, dow: null },
+  { id: 'vit2', name: 'Vit Gift (Evening)', icon: '⚡', desc: 'Pikachu friendship vit · 18–20', h: 18, m: 0, dur: 120, dow: null },
+  { id: 'wb', name: 'World Boss', icon: '🐉', desc: 'Server boss · shards + diamonds', h: 20, m: 0, dur: 30, dow: null },
+  { id: 'riot', name: 'Monster Riot', icon: '🔥', desc: 'High diamond / resource event', h: 21, m: 0, dur: 30, dow: null },
+  { id: 'vit3', name: 'Vit Gift (Night)', icon: '⚡', desc: 'Pikachu friendship vit · 21–22', h: 21, m: 0, dur: 60, dow: null },
+  { id: 'guild', name: 'Guild War', icon: '⚔️', desc: 'Saturday guild battles', h: 19, m: 30, dur: 90, dow: 6 },
+];
+
+
+
+
+/* ═══ EXACT ORIGINAL WEATHER ENGINE ═══ */
+/* ---- inlined weather-engine ---- */
+// Live Poke Weather feed — scrapes the public schedule through CORS proxies.
+const WMETA = {
+  'Mưa lớn':    { en: 'Heavy Rain',   c: '#3f8fd0' },
+  'Mưa giông':  { en: 'Thunderstorm', c: '#9277e8' },
+  'Mưa':        { en: 'Rain',         c: '#5aa7d8' },
+  'Tuyết nhiều':{ en: 'Snow',         c: '#7fc0e0' },
+  'Bão tuyết':  { en: 'Blizzard',     c: '#6ad0e8' },
+  'Tuyết':      { en: 'Slight Snow', c: '#a9dcea' },
+  'Sương mù':   { en: 'Fog',          c: '#9aa5b1' },
+  'Bão cát':    { en: 'Sandstorm',    c: '#d8a552' },
+  'Trời đẹp':   { en: 'Clear',        c: '#e6cf5c' }
+};
+const ICON = id => 'https://cdn-icons-png.magnific.com/128/8047/' + id + '.png';
+const WICON = {
+  'Mưa': ICON(8047141), 'Mưa lớn': ICON(8047161), 'Mưa giông': ICON(8047131),
+  'Tuyết': ICON(8047134), 'Tuyết nhiều': ICON(8047149), 'Bão tuyết': ICON(8047158),
+  'Sương mù': ICON(8047126), 'Bão cát': ICON(8047202), 'Trời đẹp': ICON(8047103)
+};
+
+const WORDER = ['Mưa','Mưa lớn','Mưa giông','Tuyết','Tuyết nhiều','Bão tuyết','Sương mù','Bão cát','Trời đẹp'];
+
+const EVENT_RE = /(Mưa lớn|Mưa giông|Mưa|Tuyết nhiều|Bão tuyết|Tuyết|Sương mù|Bão cát|Trời đẹp)\s*[:*\s]*(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})/g;
+const FA_TYPE = {
+  'fa-cloud-rain': 'Mưa', 'fa-cloud-showers-heavy': 'Mưa lớn', 'fa-thunderstorm': 'Mưa giông',
+  'fa-snowflake': 'Tuyết', 'fa-snowflakes': 'Tuyết nhiều', 'fa-snow-blowing': 'Bão tuyết',
+  'fa-fog': 'Sương mù', 'fa-tornado': 'Bão cát', 'fa-sun-cloud': 'Trời đẹp'
+};
+const BASE = 'https://thangtinshop.com';
+const NATIVE = typeof window !== 'undefined' && (
+  !!window.Capacitor || !!window.cordova || /^(capacitor|ionic|file):$/.test(window.location.protocol)
+);
+const PROXIES = [].concat(
+  NATIVE ? [{ url: u => u, kind: 'html' }] : [],
+  [
+    { url: u => 'https://proxy.cors.sh/' + u, kind: 'html' },
+    { url: u => 'https://api.cors.lol/?url=' + encodeURIComponent(u), kind: 'html' },
+    { url: u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u), kind: 'html' },
+    { url: u => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(u), kind: 'html' },
+    { url: u => 'https://r.jina.ai/' + u, kind: 'text' }
+  ]
+);
+const PROXY_TIMEOUT = 9000;
+
+const pad = n => (n < 10 ? '0' + n : '' + n);
+function vnMs(dmy, hm) {
+  const [d, m, y] = dmy.split('-').map(Number);
+  const [H, M] = hm.split(':').map(Number);
+  return Date.UTC(y, m - 1, d, H - 7, M, 0, 0);
+}
+function dayStartMs(dmy) {
+  const [d, m, y] = dmy.split('-').map(Number);
+  return Date.UTC(y, m - 1, d, -7, 0, 0, 0);
+}
+function typeOfBlock(el) {
+  const i = el.querySelector('i[class*="fa-"]');
+  if (i) { const hit = Array.prototype.find.call(i.classList, c => FA_TYPE[c]); if (hit) return FA_TYPE[hit]; }
+  const label = ((el.querySelector('strong') || {}).textContent || '').replace(/[:\s]+$/, '').trim();
+  return WMETA[label] ? label : null;
+}
+const absUrl = s => (s.startsWith('http') ? s : BASE + s);
+
+class WeatherFeed {
+  constructor(onChange) {
+    this.onChange = onChange || (() => {});
+    this.days = [];
+    this.loading = true;
+    this.error = null;
+    this.lastSync = 0;
+    this.fetching = false;
+    this.spawnCache = {};
+    this.monthCache = {};
+    this.monthLoading = false;
+    this.monthError = null;
+    this.month = 0;
+    this.notified = {};
+    this.goodProxy = null;
+    this.started = false;
+  }
+
+  // Month grid of every weather type, straight from the site's own JSON API.
+  // Cached per weather type so a partial month can be completed on the next attempt.
+  async loadMonth(month, year) {
+    year = year || Number(new Intl.DateTimeFormat('en', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric' }).format(new Date()));
+    const key = year + '-' + month;
+    this.month = month;
+    this.typeCache = this.typeCache || {};
+    const store = this.typeCache[key] = this.typeCache[key] || {};
+    if (Object.keys(store).length === WORDER.length) {
+      this.monthLoading = false; this.monthError = null; this.build(key, month, year); this.emit(); return;
+    }
+    if (this.monthBusy === key) return;
+    this.monthBusy = key;
+    this.monthLoading = true;
+    this.monthError = null;
+    this.emit();
+
+    const one = async (vi, i) => {
+      const res = await this.grab(BASE + '/api/thoi-tiet/type?type=' + (i + 1) + '&month=' + month, { json: true });
+      let data;
+      try { data = JSON.parse(res.body); }
+      catch (e) { const m = res.body.match(/\{[\s\S]*\}/); data = m ? JSON.parse(m[0]) : null; }
+      if (!data) throw new Error('unparseable');
+      const out = [];
+      Object.keys(data).forEach(day => {
+        const raw = data[day];
+        const list = Array.isArray(raw) ? raw : Object.values(raw || {});
+        list.forEach(ev => {
+          const t = String(ev.time || '').match(/(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})/);
+          if (!t) return;
+          const dmy = pad(Number(day)) + '-' + pad(month) + '-' + year;
+          out.push({ day: String(Number(day)), vi, start: t[1], end: t[2], date: dmy, startMs: vnMs(dmy, t[1]), endMs: vnMs(dmy, t[2]) });
+        });
+      });
+      store[vi] = out;
+    };
+
+    // Two passes, two at a time — the working proxy rate-limits bursts.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const todo = WORDER.map((vi, i) => [vi, i]).filter(([vi]) => !store[vi]);
+      if (!todo.length) break;
+      for (let i = 0; i < todo.length; i += 2) {
+        await Promise.all(todo.slice(i, i + 2).map(([vi, idx]) => one(vi, idx).catch(() => {})));
+        this.build(key, month, year);
+        this.emit();
+      }
+    }
+
+    this.monthBusy = null;
+    this.monthLoading = false;
+    this.loadedTypes = Object.keys(store).length;
+    this.build(key, month, year);
+    this.monthError = this.loadedTypes === 0 ? 'Month feed unreachable — tap retry.' : null;
+    this.lastMonth = month; this.lastYear = year;
+    this.emit();
+  }
+
+  build(key, month, year) {
+    const store = (this.typeCache && this.typeCache[key]) || {};
+    const byDay = {};
+    Object.keys(store).forEach(vi => store[vi].forEach(e => { (byDay[e.day] = byDay[e.day] || []).push(e); }));
+    Object.keys(byDay).forEach(d => byDay[d].sort((a, b) => a.startMs - b.startMs));
+    this.monthCache[key] = byDay;
+  }
+
+  // One weather type across every month of the year (Find's year view).
+  async loadTypeYear(vi) {
+    const idx = WORDER.indexOf(vi);
+    if (idx < 0) return;
+    const year = Number(new Intl.DateTimeFormat('en', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric' }).format(new Date()));
+    this.typeCache = this.typeCache || {};
+    this.yearBusy = vi;
+    this.yearLoading = true;
+    this.emit();
+    for (let m = 1; m <= 12; m += 1) {
+      const key = year + '-' + m;
+      const store = this.typeCache[key] = this.typeCache[key] || {};
+      if (store[vi]) continue;
+      try {
+        const res = await this.grab(BASE + '/api/thoi-tiet/type?type=' + (idx + 1) + '&month=' + m, { json: true });
+        let data;
+        try { data = JSON.parse(res.body); }
+        catch (e) { const mm = res.body.match(/\{[\s\S]*\}/); data = mm ? JSON.parse(mm[0]) : null; }
+        if (!data) continue;
+        const out = [];
+        Object.keys(data).forEach(day => {
+          const raw = data[day];
+          const list = Array.isArray(raw) ? raw : Object.values(raw || {});
+          list.forEach(ev => {
+            const t = String(ev.time || '').match(/(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})/);
+            if (!t) return;
+            const dmy = pad(Number(day)) + '-' + pad(m) + '-' + year;
+            out.push({ day: String(Number(day)), month: m, vi, start: t[1], end: t[2], date: dmy, startMs: vnMs(dmy, t[1]), endMs: vnMs(dmy, t[2]) });
+          });
+        });
+        store[vi] = out;
+        this.build(key, m, year);
+        this.emit();
+      } catch (e) {}
+    }
+    this.yearLoading = false;
+    this.yearBusy = null;
+    this.emit();
+  }
+
+  // Every window of one weather type across the whole year, grouped by month.
+  typeYear(vi) {
+    const year = Number(new Intl.DateTimeFormat('en', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric' }).format(new Date()));
+    const out = [];
+    for (let m = 1; m <= 12; m += 1) {
+      const store = (this.typeCache && this.typeCache[year + '-' + m]) || {};
+      if (store[vi]) out.push({ month: m, events: store[vi].slice().sort((a, b) => a.startMs - b.startMs) });
+    }
+    return out;
+  }
+
+  monthTypeCount(month, year) {
+    year = year || Number(new Intl.DateTimeFormat('en', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric' }).format(new Date()));
+    return Object.keys((this.typeCache && this.typeCache[year + '-' + month]) || {}).length;
+  }
+
+  retryMonth(month, year) {
+    this.monthBusy = null;
+    return this.loadMonth(month, year);
+  }
+
+  monthDays(month, year) {
+    year = year || Number(new Intl.DateTimeFormat('en', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric' }).format(new Date()));
+    return this.monthCache[year + '-' + month] || null;
+  }
+
+  // Fires a notification `lead` minutes before any enabled weather type starts.
+  checkAlerts(enabled, leadMinutes) {
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+    const lead = Math.max(1, leadMinutes || 5) * 60000;
+    const now = Date.now();
+    this.allEvents().forEach(e => {
+      const key = e.date + e.start + e.vi;
+      if (this.notified[key] || enabled[e.vi] === false) return;
+      const dt = e.startMs - now;
+      if (dt > 0 && dt <= lead) {
+        this.notified[key] = 1;
+        try {
+          new Notification(((WMETA[e.vi] || {}).en || e.vi) + ' incoming', { body: 'Starts ' + e.start + ' ICT · ends ' + e.end, tag: key });
+        } catch (err) {}
+      }
+    });
+  }
+
+  emit() { this.onChange(this); }
+
+  start(refreshSeconds = 90) {
+    if (this.started) return;
+    this.started = true;
+    this.load();
+    this.pollId = setInterval(() => this.load(), Math.max(30, refreshSeconds) * 1000);
+    this.onVis = () => { if (!document.hidden) this.load(); };
+    document.addEventListener('visibilitychange', this.onVis);
+  }
+  stop() {
+    clearInterval(this.pollId);
+    if (this.onVis) document.removeEventListener('visibilitychange', this.onVis);
+    this.started = false;
+  }
+
+  async grab(url, opts) {
+    const wantJson = !!(opts && opts.json);
+    const bust = url + (url.includes('?') ? '&' : '?') + '_=' + Date.now();
+    const pool = PROXIES.filter(p => p.kind !== 'text' || (opts && opts.allowText));
+    const pinned = this.goodProxy != null ? PROXIES[this.goodProxy] : null;
+    const ordered = pinned && pool.indexOf(pinned) >= 0
+      ? [pinned].concat(pool.filter(p => p !== pinned)) : pool.slice();
+    let lastErr = null;
+    for (const p of ordered) {
+      const ctl = new AbortController();
+      const to = setTimeout(() => ctl.abort(), PROXY_TIMEOUT);
+      try {
+        const r = await fetch(p.url(bust), { cache: 'no-store', signal: ctl.signal });
+        if (!r.ok) { lastErr = new Error('HTTP ' + r.status); continue; }
+        const t = new TextDecoder('utf-8').decode(await r.arrayBuffer());
+        const ok = wantJson ? /[{[]/.test(t || '') : (t && t.length > 800);
+        if (ok) { this.goodProxy = PROXIES.indexOf(p); return { body: t, kind: p.kind }; }
+        lastErr = new Error('short response');
+      } catch (e) {
+        lastErr = e && e.name === 'AbortError' ? new Error('timeout') : e;
+      } finally { clearTimeout(to); }
+    }
+    throw lastErr || new Error('unreachable');
+  }
+
+  parseIndex(html) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const seen = {}, days = [];
+    doc.querySelectorAll('a[href*="/thoi-tiet/detail/"]').forEach(a => {
+      const m = a.getAttribute('href').match(/(\d{2}-\d{2}-\d{4})/);
+      if (!m || seen[m[1]]) return;
+      seen[m[1]] = 1;
+      const events = [];
+      a.querySelectorAll('.weather').forEach(w => {
+        const vi = typeOfBlock(w);
+        const t = (w.textContent || '').match(/(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})/);
+        if (!vi || !t) return;
+        events.push({ vi, start: t[1], end: t[2], startMs: vnMs(m[1], t[1]), endMs: vnMs(m[1], t[2]) });
+      });
+      events.sort((x, y) => x.startMs - y.startMs);
+      days.push({ date: m[1], events });
+    });
+    days.sort((a, b) => dayStartMs(a.date) - dayStartMs(b.date));
+    return days.slice(0, 3);
+  }
+
+  parseIndexText(txt) {
+    const seen = {}, days = [];
+    txt.split(/\r?\n/).forEach(line => {
+      const dm = line.match(/\/thoi-tiet\/detail\/(\d{2}-\d{2}-\d{4})/);
+      if (!dm || seen[dm[1]]) return;
+      seen[dm[1]] = 1;
+      const events = [];
+      EVENT_RE.lastIndex = 0;
+      let g;
+      while ((g = EVENT_RE.exec(line)) !== null) {
+        events.push({ vi: g[1], start: g[2], end: g[3], startMs: vnMs(dm[1], g[2]), endMs: vnMs(dm[1], g[3]) });
+      }
+      events.sort((x, y) => x.startMs - y.startMs);
+      days.push({ date: dm[1], events });
+    });
+    days.sort((a, b) => dayStartMs(a.date) - dayStartMs(b.date));
+    return days.slice(0, 3);
+  }
+
+  parseDetail(html) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const blocks = [];
+    const mons = (root, sel) => Array.prototype.slice
+      .call(root.querySelectorAll(sel + ' img[src*="/images/pokemon/"]'))
+      .map(el => {
+        const url = absUrl(el.getAttribute('src') || '');
+        return { name: url.split('/').pop().replace(/\.[a-z]+$/i, ''), img: url };
+      });
+    doc.querySelectorAll('.weather').forEach(w => {
+      const box = w.parentElement;
+      if (!box || !box.querySelector('.finded-pokemon')) return;
+      const t = (w.textContent || '').match(/(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})/);
+      blocks.push({
+        vi: typeOfBlock(w), start: t ? t[1] : null, end: t ? t[2] : null,
+        normal: mons(box, '.finded-pokemon .normal'),
+        premium: mons(box, '.finded-pokemon .advanced')
+      });
+    });
+    return { blocks };
+  }
+
+  applySpawns(events, parsed) {
+    const blocks = (parsed && parsed.blocks) || [];
+    const used = {};
+    return events.map((e, i) => {
+      let b = blocks.find((x, n) => !used[n] && x.start === e.start && (used[n] = 1));
+      if (!b) b = blocks.find((x, n) => !used[n] && x.vi === e.vi && (used[n] = 1));
+      if (!b && blocks.length === events.length) { b = blocks[i]; used[i] = 1; }
+      return Object.assign({}, e, { normal: b ? b.normal : [], premium: b ? b.premium : [] });
+    });
+  }
+
+  async fetchSpawns(dmy) {
+    if (this.spawnCache[dmy]) return this.spawnCache[dmy];
+    const dr = await this.grab(BASE + '/thoi-tiet/detail/' + dmy);
+    const parsed = this.parseDetail(dr.body);
+    if (parsed.blocks.length) this.spawnCache[dmy] = parsed;
+    return parsed;
+  }
+
+  async load() {
+    if (this.fetching) return;
+    this.fetching = true;
+    this.emit();
+    try {
+      const res = await this.grab(BASE + '/thoi-tiet', { allowText: true });
+      const days = res.kind === 'text' ? this.parseIndexText(res.body) : this.parseIndex(res.body);
+      if (!days.length) throw new Error('no forecast rows found');
+      const hadEvents = this.days.some(d => (d.events || []).length);
+      if (hadEvents && !days.some(d => (d.events || []).length)) {
+        this.fetching = false;
+        this.error = 'Last sync returned no events — keeping previous data.';
+        this.emit();
+        return;
+      }
+      days.forEach(d => {
+        const c = this.spawnCache[d.date];
+        if (c) d.events = this.applySpawns(d.events, c);
+      });
+      this.days = days;
+      this.loading = false;
+      this.error = null;
+      this.lastSync = Date.now();
+      this.fetching = false;
+      this.emit();
+      for (const d of days) {
+        if (this.spawnCache[d.date]) continue;
+        try {
+          const parsed = await this.fetchSpawns(d.date);
+          if (!parsed.blocks.length) continue;
+          this.days = this.days.map(x => x.date === d.date
+            ? Object.assign({}, x, { events: this.applySpawns(x.events, parsed) }) : x);
+          this.emit();
+        } catch (e) {}
+      }
+    } catch (e) {
+      this.fetching = false;
+      this.loading = false;
+      this.error = 'Live feed unreachable (' + (e && e.message ? e.message : 'network') + '). Retrying shortly.';
+      this.emit();
+    }
+  }
+
+  allEvents() {
+    const out = [];
+    this.days.forEach(d => (d.events || []).forEach(e => out.push(Object.assign({}, e, { date: d.date }))));
+    return out.sort((a, b) => a.startMs - b.startMs);
+  }
+}
+
+
+const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const MONL = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const REF_SERVER = 1109;
+const REF_TIME = Date.UTC(2026, 7, 20, 15, 0, 0, 0);
+const pad2 = n => String(n).padStart(2, "0");
+const midnight = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const daysBetween = (a, b) => Math.round((midnight(b) - midnight(a)) / 86400000);
+const clean = n => n.replace(/\s*\([^)]*\)/g, "");
+const BLANK = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+const TYPE_CLASS = Object.fromEntries(Object.keys(typeColors).map(t => [t, "t-" + t.toLowerCase()]));
+
+function fmtCd(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60), sec = s % 60;
+  return d > 0 ? d + "d " + pad2(h) + ":" + pad2(m) + ":" + pad2(sec) : pad2(h) + ":" + pad2(m) + ":" + pad2(sec);
+}
+function serverNow() { return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Hong_Kong" })); }
+function ictNow() { return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" })); }
+function hhmmss(d) { return d.toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:false }); }
+
+function sprite(name, animated) {
+  if (animated && showdownSlug[name]) return "https://play.pokemonshowdown.com/sprites/ani/" + showdownSlug[name] + ".gif";
+  const id = pokedexId[name];
+  return id ? "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/" + id + ".png" : BLANK;
+}
+// Sets an <img>'s src with a one-shot fallback to the static artwork if the
+// animated Showdown sprite 404s or fails to load (e.g. an unlisted slug).
+function setSpriteWithFallback(el, name) {
+  if (!el) return;
+  const fallback = sprite(name, false);
+  el.onerror = () => { el.onerror = null; el.src = fallback; };
+  el.src = sprite(name, true);
+}
+function typeChips(names, size) {
+  return (names || []).map(n => {
+    const cls = TYPE_CLASS[n] || "";
+    const st = size === "sm" ? "font-size:.55rem;padding:3px 7px;border-radius:6px" : "";
+    return `<span class="type-chip ${cls}" style="${st}">${n}</span>`;
+  }).join("");
+}
+function matchups(types) {
+  const weak = [], resist = [];
+  Object.keys(typeChart).forEach(at => {
+    let mult = 1;
+    (types || []).forEach(dt => {
+      const c = typeChart[dt]; if (!c) return;
+      if (c.immune.includes(at)) mult *= 0;
+      else if (c.weak.includes(at)) mult *= 2;
+      else if (c.resist.includes(at)) mult *= 0.5;
+    });
+    if (mult > 1) weak.push(at);
+    else if (mult < 1 && mult > 0) resist.push(at);
+  });
+  return { weak, resist };
+}
+
+const state = {
+  view: "board", favs: [], sel: null, q: "", favOnly: false, rotOffset: 0,
+  wxTab: "now", wxQuery: "", wxType: null, wxMonth: null, wxYear: null, wxDay: null, wxSel: null,
+  alerts: {}, notif: "default"
+};
+try {
+  const raw = localStorage.getItem("lh_favs"); if (raw) state.favs = JSON.parse(raw);
+  const al = localStorage.getItem("lh_alerts"); if (al) state.alerts = JSON.parse(al);
+} catch (e) {}
+if (typeof Notification !== "undefined") state.notif = Notification.permission;
+
+let _entries = null, _byKey = {};
+function entries() {
+  if (_entries) return _entries;
+  const start = new Date(2026, 7, 7);
+  const today = new Date();
+  const friday = new Date(today);
+  friday.setDate(friday.getDate() - ((midnight(today).getDay() - 5 + 7) % 7) - 56);
+  const offset = daysBetween(start, friday);
+  const out = [];
+  for (let i = 0; i < 420; i++) {
+    const d = new Date(friday);
+    d.setDate(d.getDate() + i);
+    out.push({ date: d, name: rotation[((offset + i) % 56 + 56) % 56] });
+  }
+  _entries = out;
+  out.forEach(e => { _byKey[e.date.getFullYear() + "-" + e.date.getMonth() + "-" + e.date.getDate()] = e; });
+  return out;
+}
+function entryFor(y, m, d) { entries(); return _byKey[y + "-" + m + "-" + d] || null; }
+function serverInfo() {
+  const now = Date.now();
+  let target = REF_TIME, server = REF_SERVER;
+  while (target <= now) { target += 604800000; server++; }
+  return { target: new Date(target), server };
+}
+function eventStatus(ev) {
+  const now = serverNow();
+  const start = new Date(now);
+  start.setHours(ev.h, ev.m, 0, 0);
+  if (ev.dow != null) start.setDate(start.getDate() + ((ev.dow - now.getDay() + 7) % 7));
+  let end = new Date(start.getTime() + ev.dur * 60000);
+  if (ev.dow == null) {
+    if (now >= end) { start.setDate(start.getDate() + 1); end = new Date(start.getTime() + ev.dur * 60000); }
+  } else if (now >= end && ev.dow === now.getDay()) {
+    start.setDate(start.getDate() + 7); end = new Date(start.getTime() + ev.dur * 60000);
+  }
+  const live = now >= start && now < end;
+  return { live, ms: live ? end - now : start - now, pct: live ? (now - start) / (end - start) * 100 : 0, at: pad2(ev.h) + ":" + pad2(ev.m) };
+}
+
+/* Weather feed instance — same automation as original */
+let wx = null;
+function initWeather() {
+  wx = new WeatherFeed(() => { if (state.view === "weather") renderWeather(); });
+  wx.start(90);
+  const month = Number(new Intl.DateTimeFormat("en", { timeZone: "Asia/Ho_Chi_Minh", month: "numeric" }).format(new Date()));
+  const year = Number(new Intl.DateTimeFormat("en", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric" }).format(new Date()));
+  state.wxMonth = month;
+  state.wxYear = year;
+  wx.loadMonth(month, year);
+}
+
+function go(view) {
+  state.view = view; state.sel = null;
+  document.querySelectorAll(".nav-item").forEach(el => el.classList.toggle("on", el.dataset.view === view));
+  ["board","rotation","weather","events","server","download","builds","teams","about"].forEach(v => {
+    const el = document.getElementById("view-" + v);
+    if (el) el.classList.toggle("hidden", v !== view);
+  });
+  try { history.replaceState(null, "", "#" + view); } catch (e) {}
+  window.scrollTo({ top: 0 });
+  render();
+}
+function toggleFav(name) {
+  const i = state.favs.indexOf(name);
+  if (i >= 0) state.favs.splice(i, 1); else state.favs.push(name);
+  try { localStorage.setItem("lh_favs", JSON.stringify(state.favs)); } catch (e) {}
+  render();
+}
+function toggleAlert(vi) {
+  state.alerts = Object.assign({}, state.alerts, { [vi]: state.alerts[vi] === false });
+  try { localStorage.setItem("lh_alerts", JSON.stringify(state.alerts)); } catch (e) {}
+  renderWeather();
+}
+
+function openSheet(name) {
+  state.sel = name;
+  const types = pokemonTypes[name] || [];
+  const mu = matchups(types);
+  const next = entries().find(e => e.name === name && midnight(e.date) >= midnight(new Date()));
+  const isFav = state.favs.includes(name);
+  setSpriteWithFallback(document.getElementById("sheetSprite"), name);
+  document.getElementById("sheetName").textContent = name;
+  document.getElementById("sheetTypes").innerHTML = typeChips(types);
+  document.getElementById("sheetNature").textContent = natureMap[name] || "Any offensive nature";
+  document.getElementById("sheetItem").textContent = itemByType[types[0]] || "Elemental booster";
+  document.getElementById("sheetNext").textContent = next
+    ? DOW[next.date.getDay()] + " " + next.date.getDate() + " " + MON[next.date.getMonth()]
+    : "Not in the next year";
+  document.getElementById("sheetWeak").innerHTML = typeChips(mu.weak, "sm") || '<span style="color:var(--dim);font-size:0.75rem">—</span>';
+  document.getElementById("sheetResist").innerHTML = typeChips(mu.resist, "sm") || '<span style="color:var(--dim);font-size:0.75rem">—</span>';
+  document.getElementById("sheetFav").textContent = isFav ? "On watchlist" : "Add to watchlist";
+  document.getElementById("sheetWiki").href = "https://pokelandlegendswestern.fandom.com/wiki/" + clean(name).trim().replace(/\s+/g, "_");
+  document.getElementById("sheetOverlay").classList.add("open");
+}
+function closeSheet() { document.getElementById("sheetOverlay").classList.remove("open"); state.sel = null; }
+
+function renderClocks() {
+  document.getElementById("clockHK").textContent = hhmmss(serverNow());
+  document.getElementById("clockICT").textContent = hhmmss(ictNow());
+}
+
+function renderBoard() {
+  const today = new Date();
+  const list = entries();
+  const hero = list.find(e => midnight(e.date).getTime() === midnight(today).getTime()) || list[0];
+  const heroIdx = list.indexOf(hero);
+  const favSet = new Set(state.favs);
+  document.getElementById("heroDate").textContent = DOW[today.getDay()].toUpperCase() + " " + today.getDate() + " " + MON[today.getMonth()].toUpperCase();
+  document.getElementById("heroName").textContent = hero.name;
+  setSpriteWithFallback(document.getElementById("heroSprite"), hero.name);
+  document.getElementById("heroTypes").innerHTML = typeChips(pokemonTypes[hero.name]);
+  const isFav = favSet.has(hero.name);
+  const btnW = document.getElementById("btnWatch");
+  btnW.textContent = isFav ? "★ Watching" : "☆ Watch";
+  const sn = serverNow();
+  const reset = new Date(sn); reset.setHours(5, 0, 0, 0);
+  if (sn >= reset) reset.setDate(reset.getDate() + 1);
+  const resetMs = reset - sn;
+  document.getElementById("resetIn").textContent = fmtCd(resetMs);
+  document.getElementById("resetBar").style.width = (100 - (resetMs / 86400000) * 100).toFixed(1) + "%";
+  const evs = DAILY_EVENTS.map(e => Object.assign({}, e, eventStatus(e))).sort((a, b) => (b.live - a.live) || (a.ms - b.ms));
+  const top = evs[0];
+  document.getElementById("statEvName").textContent = top.name;
+  document.getElementById("statEvName").classList.toggle("live", top.live);
+  document.getElementById("statEvCd").textContent = (top.live ? "ends " : "") + fmtCd(top.ms);
+  const srv = serverInfo();
+  document.getElementById("statSrvNum").textContent = "#" + srv.server;
+  document.getElementById("statSrvCd").textContent = fmtCd(srv.target - Date.now());
+  document.getElementById("weekStrip").innerHTML = list.slice(heroIdx, heroIdx + 7).map(e => {
+    const isT = midnight(e.date).getTime() === midnight(today).getTime();
+    return `<button class="week-card${isT ? " today" : ""}" data-name="${e.name}">
+      <span class="week-dow">${DOW[e.date.getDay()].toUpperCase()} ${e.date.getDate()}</span>
+      <img class="week-sprite" src="${sprite(e.name)}" alt="" loading="lazy">
+      <span class="week-name">${clean(e.name)}</span>
+    </button>`;
+  }).join("");
+  const favEl = document.getElementById("favList");
+  const favEmpty = document.getElementById("favEmpty");
+  if (state.favs.length) {
+    favEmpty.classList.add("hidden");
+    favEl.innerHTML = state.favs.map(n => {
+      const nx = list.find(e => e.name === n && midnight(e.date) >= midnight(today));
+      const nextLabel = nx ? (midnight(nx.date).getTime() === midnight(today).getTime() ? "Today" : DOW[nx.date.getDay()] + " " + nx.date.getDate()) : "—";
+      return `<button class="fav-chip" data-name="${n}"><img src="${sprite(n)}" alt="" loading="lazy"><div><div>${clean(n)}</div><div class="fav-next">${nextLabel}</div></div></button>`;
+    }).join("");
+  } else { favEl.innerHTML = ""; favEmpty.classList.remove("hidden"); }
+  document.getElementById("boardEvents").innerHTML = evs.slice(0, 4).map(e => `
+    <div class="event-item${e.live ? " live" : ""}">
+      <div class="event-ico">${e.icon}</div>
+      <div class="event-body"><div class="event-name">${e.name}</div><div class="event-desc">${e.desc}</div></div>
+      <div class="event-right"><div class="event-cd">${fmtCd(e.ms)}</div><div class="event-status">${e.live ? "ENDS IN" : "STARTS IN"}</div></div>
+    </div>`).join("");
+}
+
+function renderRotation() {
+  const today = new Date();
+  const q = state.q.trim().toLowerCase();
+  const favSet = new Set(state.favs);
+  const upcoming = entries().filter(e => midnight(e.date) >= midnight(today));
+  let results = [];
+  if (q.length >= 2) results = upcoming.filter(e => e.name.toLowerCase().includes(q)).slice(0, 30);
+  else if (state.favOnly) results = upcoming.filter(e => favSet.has(e.name)).slice(0, 30);
+  const showResults = results.length > 0 || q.length >= 2 || state.favOnly;
+  document.getElementById("rotResults").classList.toggle("hidden", !showResults);
+  document.getElementById("rotCalendar").classList.toggle("hidden", showResults);
+  if (showResults) {
+    document.getElementById("rotResults").innerHTML = results.length
+      ? results.map(e => `<button class="result-row" data-name="${e.name}"><img src="${sprite(e.name)}" alt="" loading="lazy"><span class="result-name">${e.name}</span><span class="result-date">${DOW[e.date.getDay()]} ${e.date.getDate()} ${MON[e.date.getMonth()]}</span></button>`).join("")
+      : '<div class="empty"><p>No matches</p></div>';
+  } else {
+    const anchor = new Date(today.getFullYear(), today.getMonth() + state.rotOffset, 1);
+    const y = anchor.getFullYear(), mo = anchor.getMonth();
+    const dim = new Date(y, mo + 1, 0).getDate();
+    const lead = (new Date(y, mo, 1).getDay() + 6) % 7;
+    document.getElementById("rotMonth").textContent = MONL[mo] + " " + y;
+    let html = DOW.slice(1).concat(DOW[0]).map(d => `<div class="cal-head">${d[0]}</div>`).join("");
+    for (let i = 0; i < lead; i++) html += '<div class="cal-cell empty"></div>';
+    for (let d = 1; d <= dim; d++) {
+      const e = entryFor(y, mo, d);
+      const isToday = y === today.getFullYear() && mo === today.getMonth() && d === today.getDate();
+      const isFav = e && favSet.has(e.name);
+      html += `<button class="cal-cell${isToday ? " today" : ""}${e ? "" : " empty"}" ${e ? `data-name="${e.name}"` : ""}>
+        <span class="cal-num">${d}</span>${e ? `<img src="${sprite(e.name)}" alt="" loading="lazy">` : ""}${isFav ? '<span class="cal-star">★</span>' : ""}</button>`;
+    }
+    document.getElementById("rotGrid").innerHTML = html;
+  }
+  document.getElementById("favFilter").classList.toggle("on", state.favOnly);
+  document.getElementById("favFilter").textContent = state.favs.length ? "★ Watchlist · " + state.favs.length : "★ Watchlist";
+}
+
+function renderEvents() {
+  const sn = serverNow();
+  document.getElementById("evDate").textContent = sn.toLocaleDateString("en-GB", { weekday:"long", day:"numeric", month:"long" });
+  const evs = DAILY_EVENTS.map(e => Object.assign({}, e, eventStatus(e))).sort((a, b) => (b.live - a.live) || (a.ms - b.ms));
+  document.getElementById("eventsFull").innerHTML = evs.map(e => `
+    <div class="event-item${e.live ? " live" : ""}">
+      <div class="event-ico">${e.icon}</div>
+      <div class="event-body"><div class="event-name">${e.name}</div><div class="event-desc">${e.desc} · ${e.at}</div></div>
+      <div class="event-right"><div class="event-cd">${fmtCd(e.ms)}</div><div class="event-status">${e.live ? "ENDS IN" : (e.ms < 3600000 ? "SOON" : "STARTS IN")}</div></div>
+    </div>`).join("");
+}
+
+function renderServer() {
+  const srv = serverInfo();
+  const srvMs = srv.target - Date.now();
+  document.getElementById("serverNum").textContent = "#" + srv.server;
+  document.getElementById("serverWhen").textContent = srv.target.toLocaleString("en-GB", { weekday:"short", day:"numeric", month:"short", hour:"2-digit", minute:"2-digit", hour12:false, timeZone:"Asia/Hong_Kong" }) + " HKT";
+  const blocks = [
+    { v: pad2(Math.floor(srvMs / 86400000)), u: "DAYS" },
+    { v: pad2(Math.floor(srvMs / 3600000) % 24), u: "HRS" },
+    { v: pad2(Math.floor(srvMs / 60000) % 60), u: "MIN" },
+    { v: pad2(Math.floor(srvMs / 1000) % 60), u: "SEC" }
+  ];
+  document.getElementById("serverBlocks").innerHTML = blocks.map(b => `<div class="cd-block"><div class="cd-val">${b.v}</div><div class="cd-unit">${b.u}</div></div>`).join("");
+  document.getElementById("serverList").innerHTML = Array.from({ length: 6 }, (_, i) => {
+    const t = new Date(srv.target.getTime() + i * 604800000);
+    return `<div class="server-row${i === 0 ? " next" : ""}"><span class="num">#${srv.server + i}</span><span class="when">${t.toLocaleString("en-GB", { weekday:"short", day:"numeric", month:"short", hour:"2-digit", minute:"2-digit", hour12:false, timeZone:"Asia/Hong_Kong" })}</span><span class="away">${i === 0 ? "next up" : i + " wk"}</span></div>`;
+  }).join("");
+}
+
+function renderWeather() {
+  document.querySelectorAll(".wx-tab").forEach(t => t.classList.toggle("on", t.dataset.wxtab === state.wxTab));
+  document.getElementById("wxNow").classList.toggle("hidden", state.wxTab !== "now");
+  document.getElementById("wxCalendar").classList.toggle("hidden", state.wxTab !== "calendar");
+  document.getElementById("wxFind").classList.toggle("hidden", state.wxTab !== "find");
+  document.getElementById("wxAlerts").classList.toggle("hidden", state.wxTab !== "alerts");
+
+  if (!wx) return;
+  const now = Date.now();
+  const all = wx.allEvents();
+  const current = all.find(e => e.startMs <= now && now < e.endMs) || null;
+  const next = all.find(e => e.startMs > now) || null;
+  const picked = state.wxSel ? all.find(e => e.date === state.wxSel.date && e.start === state.wxSel.start && e.vi === state.wxSel.vi) : null;
+  const hero = picked || current || next;
+  const meta = hero ? (WMETA[hero.vi] || { en: hero.vi, c: "#8C94A3" }) : { en: "", c: "#5aa7d8" };
+  const heroLive = !!hero && hero.startMs <= now && now < hero.endMs;
+  const age = wx.lastSync ? Math.round((now - wx.lastSync) / 1000) : null;
+  const todayDmy = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Ho_Chi_Minh", day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date()).replace(/\//g, "-");
+  const dayTitle = dmy => {
+    if (dmy === todayDmy) return "Today";
+    const [d, m, y] = dmy.split("-").map(Number);
+    return DOW[new Date(Date.UTC(y, m - 1, d)).getUTCDay()] + " " + d + " " + MON[m - 1];
+  };
+  const stateOf = e => (e.startMs <= now && now < e.endMs) ? "LIVE" : (e.endMs <= now ? "DONE" : "SOON");
+
+  document.getElementById("wxTitle").textContent = wx.loading ? "Syncing…" : hero ? meta.en : "All quiet";
+  document.getElementById("wxKicker").textContent = heroLive ? "Happening now" : picked ? "Selected window" : hero ? "Next event" : "No events ahead";
+  document.getElementById("wxKicker").className = "kicker " + (heroLive ? "green" : "");
+  document.getElementById("wxWindow").textContent = hero ? hero.start + " – " + hero.end + " ICT" : "Nothing in the next three days";
+  document.getElementById("wxIcon").src = hero && WICON[hero.vi] ? WICON[hero.vi] : BLANK;
+  document.getElementById("wxCd").textContent = hero ? fmtCd(heroLive ? hero.endMs - now : hero.startMs - now) : "--:--:--";
+  document.getElementById("wxCdLabel").textContent = hero ? (heroLive ? "until it ends" : "until it starts") : "";
+  document.getElementById("wxSync").textContent = wx.error ? "Reconnecting" : wx.loading ? "Fetching" : age !== null ? "Synced " + (age < 5 ? "just now" : age + "s ago") : "Live";
+  document.getElementById("wxDot").className = "dot " + (wx.error ? "red" : wx.fetching ? "gold" : "green");
+  document.getElementById("wxHero").style.background = "linear-gradient(155deg," + meta.c + "26,var(--s0))";
+  document.getElementById("wxHero").style.borderColor = meta.c + "3d";
+  document.getElementById("spawnHeading").textContent = heroLive ? "Appearing right now" : "Will appear";
+
+  let groups = "";
+  if (hero && hero.normal && hero.normal.length) {
+    groups += '<div class="kicker" style="margin-top:12px">Common</div><div class="spawn-grid">' +
+      hero.normal.map(m => `<div class="spawn-mon"><img src="${m.img}" alt=""><span>${m.name}</span></div>`).join("") + "</div>";
+  }
+  if (hero && hero.premium && hero.premium.length) {
+    groups += '<div class="kicker gold" style="margin-top:12px">Premium</div><div class="spawn-grid">' +
+      hero.premium.map(m => `<div class="spawn-mon"><img src="${m.img}" alt=""><span>${m.name}</span></div>`).join("") + "</div>";
+  }
+  if (!groups) groups = '<div class="empty"><p>Spawn list loads with the live feed</p></div>';
+  document.getElementById("spawnGroups").innerHTML = groups;
+
+  document.getElementById("wxDays").innerHTML = (wx.days || []).map(d => {
+    return `<div><div class="wx-day-title">${dayTitle(d.date)}</div>${(d.events || []).map(e => {
+      const m2 = WMETA[e.vi] || { en: e.vi, c: "#8C94A3" };
+      const st = stateOf(e);
+      return `<button class="wx-event" data-wx="${e.date}|${e.start}|${e.vi}">
+        <span class="rail" style="background:${m2.c}"></span>
+        <img src="${WICON[e.vi] || BLANK}" alt="">
+        <span class="wx-event-name">${m2.en}</span>
+        <span class="wx-event-window">${e.start} – ${e.end}</span>
+        <span class="wx-event-tag" style="color:${st === "LIVE" ? "var(--green)" : st === "DONE" ? "var(--dim)" : m2.c}">${st}</span>
+      </button>`;
+    }).join("")}</div>`;
+  }).join("");
+
+  // Calendar
+  const year = state.wxYear || Number(new Intl.DateTimeFormat("en", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric" }).format(new Date()));
+  const month = state.wxMonth || 1;
+  const byDay = wx.monthDays ? wx.monthDays(month, year) : {};
+  const wxTypeCount = wx.monthTypeCount ? wx.monthTypeCount(month, year) : 0;
+  document.getElementById("wxMonthLabel").textContent = MONL[month - 1] + " " + year;
+  document.getElementById("wxMonthStatus").textContent = wx.monthLoading
+    ? "Loading " + wxTypeCount + "/9 types…"
+    : wxTypeCount === 9
+      ? Object.keys(byDay || {}).length + " days mapped"
+      : wxTypeCount + "/9 types · tap retry";
+  document.getElementById("wxMonthStatus").classList.toggle("wx-status-retry", !wx.monthLoading && wxTypeCount < 9);
+  const dim = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const lead = (new Date(Date.UTC(year, month - 1, 1)).getUTCDay() + 6) % 7;
+  let cells = "";
+  for (let i = 0; i < lead; i++) cells += '<div class="cal-cell empty"></div>';
+  for (let d = 1; d <= dim; d++) {
+    const list = (byDay && byDay[String(d)]) || [];
+    const isToday = todayDmy === pad2(d) + "-" + pad2(month) + "-" + year;
+    const isPicked = state.wxDay === d;
+    const dots = list.slice(0, 4).map(e => `<span style="width:6px;height:6px;border-radius:50%;background:${(WMETA[e.vi]||{}).c||'#8C94A3'};display:inline-block;margin:1px"></span>`).join("");
+    cells += `<button class="cal-cell${isToday ? " today" : ""}" data-wxday="${d}" style="${isPicked ? "border-color:rgba(var(--gold-rgb),.55);background:rgba(var(--gold-rgb),.14)" : ""}">
+      <span class="cal-num">${d}</span><div style="display:flex;flex-wrap:wrap;justify-content:center;margin-top:4px">${dots}</div></button>`;
+  }
+  document.getElementById("wxCells").innerHTML = cells;
+  const pickedList = (byDay && state.wxDay && byDay[String(state.wxDay)]) || [];
+  document.getElementById("wxPickedLabel").textContent = state.wxDay
+    ? pickedList.length + " events on " + state.wxDay + " " + MON[month - 1]
+    : "Pick a day to list its weather";
+  document.getElementById("wxPickedEvents").innerHTML = pickedList.map(e => {
+    const m2 = WMETA[e.vi] || { en: e.vi, c: "#8C94A3" };
+    return `<div class="wx-event"><span class="rail" style="background:${m2.c}"></span><img src="${WICON[e.vi]||BLANK}" alt=""><span class="wx-event-name">${m2.en}</span><span class="wx-event-window">${e.start} – ${e.end} ICT</span></div>`;
+  }).join("");
+
+  // Find
+  document.getElementById("wxTypeChips").innerHTML = WORDER.map(vi => {
+    const m2 = WMETA[vi];
+    const on = state.wxType === vi;
+    return `<button class="type-chip" data-wtype="${vi}" style="cursor:pointer;border:1px solid ${on ? m2.c + "77" : "var(--line)"};background:${on ? m2.c + "22" : "var(--s1)"};color:${on ? m2.c : "var(--muted)"}">${m2.en}</button>`;
+  }).join("");
+  const q = state.wxQuery.trim().toLowerCase();
+  let hits = all.slice();
+  if (state.wxType) hits = hits.filter(e => e.vi === state.wxType);
+  if (q.length >= 2) {
+    hits = hits.filter(e => {
+      const en = ((WMETA[e.vi] || {}).en || "").toLowerCase();
+      const mons = [].concat(e.normal || [], e.premium || []).map(m => m.name.toLowerCase());
+      return en.includes(q) || e.vi.toLowerCase().includes(q) || mons.some(n => n.includes(q));
+    });
+  } else if (!state.wxType) hits = [];
+  document.getElementById("wxHits").innerHTML = hits.map(e => {
+    const m2 = WMETA[e.vi] || { en: e.vi, c: "#8C94A3" };
+    const mons = [].concat(e.normal || [], e.premium || []);
+    const st = stateOf(e);
+    return `<button class="result-row" data-wx="${e.date}|${e.start}|${e.vi}">
+      <img src="${WICON[e.vi]||BLANK}" alt="" style="width:28px;height:28px">
+      <span class="result-name">${m2.en}</span>
+      <span class="result-date">${dayTitle(e.date)} · ${e.start}${mons.length ? " · " + mons.length + " spawns" : ""}</span>
+    </button>`;
+  }).join("");
+  document.getElementById("wxFindHint").classList.toggle("hidden", hits.length > 0 || (q.length < 2 && !state.wxType));
+  document.getElementById("wxFindHint").innerHTML = `<p>${q.length >= 2 || state.wxType ? "No windows match" : "Type a Pokémon or pick a weather type"}</p>`;
+
+  // Alerts
+  document.getElementById("notifText").textContent = state.notif === "granted"
+    ? "Notifications are enabled. Alerts fire for weather types switched on."
+    : state.notif === "denied"
+    ? "Notifications are blocked in browser settings for this page."
+    : "Allow notifications to get a heads-up before a weather window opens.";
+  document.getElementById("notifBtn").textContent = state.notif === "granted" ? "Enabled" : state.notif === "denied" ? "Blocked" : "Enable notifications";
+  document.getElementById("wxAlertRows").innerHTML = WORDER.map(vi => {
+    const m2 = WMETA[vi];
+    const on = state.alerts[vi] !== false;
+    return `<button class="wx-event" data-alert="${vi}" style="opacity:${on ? 1 : 0.55};border-color:${on ? m2.c + "44" : "var(--line)"};background:${on ? m2.c + "14" : "var(--s0)"}">
+      <img src="${WICON[vi]||BLANK}" alt=""><span class="wx-event-name">${m2.en}</span>
+      <span class="wx-event-tag" style="color:${on ? m2.c : "var(--dim)"}">${on ? "ON" : "OFF"}</span>
+    </button>`;
+  }).join("");
+}
+
+function render() {
+  renderClocks();
+  if (state.view === "board") renderBoard();
+  else if (state.view === "rotation") renderRotation();
+  else if (state.view === "weather") renderWeather();
+  else if (state.view === "events") renderEvents();
+  else if (state.view === "server") renderServer();
+}
+
+const THEMES = [
+  { id: "orange",   name: "Flareon",  c: "#ef6a2b", mon: 136 },
+  { id: "jolteon",  name: "Jolteon",  c: "#ffd93b", mon: 135 },
+  { id: "leafeon",  name: "Leafeon",  c: "#7fc85c", mon: 470 },
+  { id: "vaporeon", name: "Vaporeon", c: "#4f9fe0", mon: 134 },
+  { id: "glaceon",  name: "Glaceon",  c: "#8fd8e8", mon: 471 },
+  { id: "espeon",   name: "Espeon",   c: "#b98ae0", mon: 196 },
+  { id: "sylveon",  name: "Sylveon",  c: "#ff9dc2", mon: 700 },
+  { id: "umbreon",  name: "Umbreon",  c: "#b07d1c", mon: 197 }
+];
+let curTheme = "orange";
+try { const st = localStorage.getItem("lh_theme"); if (st && THEMES.some(t => t.id === st)) curTheme = st; } catch (e) {}
+function applyTheme(id) {
+  curTheme = id;
+  if (id === "orange") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", id);
+  try { localStorage.setItem("lh_theme", id); } catch (e) {}
+  document.querySelectorAll(".theme-row").forEach(r => r.classList.toggle("on", r.dataset.theme === id));
+  const t = THEMES.find(x => x.id === id) || THEMES[0], mon = document.getElementById("abMon");
+  if (mon) mon.src = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/" + t.mon + ".png";
+}
+document.getElementById("themeList").innerHTML = THEMES.map(t => `
+  <button class="theme-row" data-theme="${t.id}" type="button">
+    <span class="theme-dot" style="background:${t.c}"></span>
+    <span class="theme-name">${t.name}</span>
+    <svg class="theme-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+  </button>`).join("");
+document.querySelectorAll(".theme-row").forEach(r => r.addEventListener("click", () => applyTheme(r.dataset.theme)));
+applyTheme(curTheme);
+const drawer = document.getElementById("drawer"), scrim = document.getElementById("scrim");
+function setDrawer(on) { drawer.classList.toggle("on", on); scrim.classList.toggle("on", on); }
+document.getElementById("btnMenu").addEventListener("click", () => setDrawer(true));
+const side = document.getElementById("side"), sideScrim = document.getElementById("sideScrim");
+function setSide(on) { side.classList.toggle("on", on); sideScrim.classList.toggle("on", on); }
+document.getElementById("btnSide").addEventListener("click", () => setSide(true));
+document.getElementById("btnSideClose").addEventListener("click", () => setSide(false));
+sideScrim.addEventListener("click", () => setSide(false));
+document.querySelectorAll("[data-side]").forEach(b => b.addEventListener("click", () => { setSide(false); go(b.dataset.side); }));
+document.getElementById("btnClose").addEventListener("click", () => setDrawer(false));
+scrim.addEventListener("click", () => setDrawer(false));
+
+document.querySelectorAll(".nav-item").forEach(btn => btn.addEventListener("click", () => go(btn.dataset.view)));
+document.querySelectorAll("[data-go]").forEach(btn => btn.addEventListener("click", () => go(btn.dataset.go)));
+document.getElementById("btnWatch").addEventListener("click", () => {
+  const name = document.getElementById("heroName").textContent;
+  if (name && name !== "—") toggleFav(name);
+});
+document.getElementById("btnHeroDetail").addEventListener("click", () => {
+  const name = document.getElementById("heroName").textContent;
+  if (name && name !== "—") openSheet(name);
+});
+document.getElementById("statEvent").addEventListener("click", () => go("events"));
+document.getElementById("statServer").addEventListener("click", () => go("server"));
+document.getElementById("weekStrip").addEventListener("click", e => { const c = e.target.closest("[data-name]"); if (c) openSheet(c.dataset.name); });
+document.getElementById("favList").addEventListener("click", e => { const c = e.target.closest("[data-name]"); if (c) openSheet(c.dataset.name); });
+document.getElementById("rotSearch").addEventListener("input", e => { state.q = e.target.value; renderRotation(); });
+document.getElementById("favFilter").addEventListener("click", () => { state.favOnly = !state.favOnly; renderRotation(); });
+document.getElementById("rotPrev").addEventListener("click", () => { state.rotOffset--; renderRotation(); });
+document.getElementById("rotNext").addEventListener("click", () => { state.rotOffset++; renderRotation(); });
+document.getElementById("rotGrid").addEventListener("click", e => { const c = e.target.closest("[data-name]"); if (c) openSheet(c.dataset.name); });
+document.getElementById("rotResults").addEventListener("click", e => { const r = e.target.closest("[data-name]"); if (r) openSheet(r.dataset.name); });
+document.getElementById("wxTabs").addEventListener("click", e => { const t = e.target.closest("[data-wxtab]"); if (t) { state.wxTab = t.dataset.wxtab; renderWeather(); } });
+document.getElementById("wxTypeChips").addEventListener("click", e => {
+  const c = e.target.closest("[data-wtype]");
+  if (c) { state.wxType = state.wxType === c.dataset.wtype ? null : c.dataset.wtype; if (state.wxType && wx) wx.loadTypeYear(state.wxType); renderWeather(); }
+});
+document.getElementById("wxQuery").addEventListener("input", e => { state.wxQuery = e.target.value; renderWeather(); });
+document.getElementById("wxMonthStatus").addEventListener("click", () => {
+  if (!wx || wx.monthLoading) return;
+  const count = wx.monthTypeCount ? wx.monthTypeCount(state.wxMonth, state.wxYear) : 0;
+  if (count < 9) { wx.retryMonth(state.wxMonth, state.wxYear); renderWeather(); }
+});
+document.getElementById("wxMonthPrev").addEventListener("click", () => {
+  if (state.wxMonth === 1) { state.wxMonth = 12; state.wxYear = (state.wxYear || new Date().getFullYear()) - 1; }
+  else { state.wxMonth = state.wxMonth - 1; }
+  state.wxDay = null;
+  if (wx) wx.loadMonth(state.wxMonth, state.wxYear); renderWeather();
+});
+document.getElementById("wxMonthNext").addEventListener("click", () => {
+  if (state.wxMonth === 12) { state.wxMonth = 1; state.wxYear = (state.wxYear || new Date().getFullYear()) + 1; }
+  else { state.wxMonth = state.wxMonth + 1; }
+  state.wxDay = null;
+  if (wx) wx.loadMonth(state.wxMonth, state.wxYear); renderWeather();
+});
+document.getElementById("wxCells").addEventListener("click", e => {
+  const c = e.target.closest("[data-wxday]");
+  if (c) { state.wxDay = Number(c.dataset.wxday); renderWeather(); }
+});
+document.getElementById("wxDays").addEventListener("click", e => {
+  const b = e.target.closest("[data-wx]");
+  if (b) { const [date, start, vi] = b.dataset.wx.split("|"); state.wxSel = { date, start, vi }; state.wxTab = "now"; renderWeather(); }
+});
+document.getElementById("wxHits").addEventListener("click", e => {
+  const b = e.target.closest("[data-wx]");
+  if (b) { const [date, start, vi] = b.dataset.wx.split("|"); state.wxSel = { date, start, vi }; state.wxTab = "now"; renderWeather(); }
+});
+document.getElementById("wxRefresh").addEventListener("click", () => { if (wx) wx.load(); });
+document.getElementById("wxAlertRows").addEventListener("click", e => {
+  const b = e.target.closest("[data-alert]");
+  if (b) toggleAlert(b.dataset.alert);
+});
+document.getElementById("notifBtn").addEventListener("click", async () => {
+  if (typeof Notification === "undefined") return;
+  if (Notification.permission !== "default") { state.notif = Notification.permission; renderWeather(); return; }
+  try { const p = await Notification.requestPermission(); state.notif = p; renderWeather(); } catch (e) {}
+});
+document.getElementById("sheetOverlay").addEventListener("click", e => { if (e.target === e.currentTarget) closeSheet(); });
+document.getElementById("sheetFav").addEventListener("click", () => { if (state.sel) { toggleFav(state.sel); openSheet(state.sel); } });
+
+const hash = (location.hash || "").slice(1);
+if (["board","rotation","weather","events","server","download","builds","teams","about"].includes(hash)) go(hash);
+else render();
+
+initWeather();
+
+setInterval(() => {
+  renderClocks();
+  if (state.view === "board") {
+    const sn = serverNow();
+    const reset = new Date(sn); reset.setHours(5, 0, 0, 0);
+    if (sn >= reset) reset.setDate(reset.getDate() + 1);
+    const resetMs = reset - sn;
+    document.getElementById("resetIn").textContent = fmtCd(resetMs);
+    document.getElementById("resetBar").style.width = (100 - (resetMs / 86400000) * 100).toFixed(1) + "%";
+    const evs = DAILY_EVENTS.map(e => Object.assign({}, e, eventStatus(e))).sort((a, b) => (b.live - a.live) || (a.ms - b.ms));
+    const top = evs[0];
+    document.getElementById("statEvCd").textContent = (top.live ? "ends " : "") + fmtCd(top.ms);
+    document.getElementById("statSrvCd").textContent = fmtCd(serverInfo().target - Date.now());
+  }
+  if (state.view === "events") renderEvents();
+  if (state.view === "server") renderServer();
+  if (state.view === "weather") renderWeather();
+  if (wx && state.notif === "granted") wx.checkAlerts(state.alerts, 5);
+}, 1000);
+</script>
+</body>
+</html>
